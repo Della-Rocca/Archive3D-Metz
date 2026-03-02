@@ -175,6 +175,7 @@
   let inventoryFilterDepositor = "";
   let inventoryFilterSoftware = "";
   let activeInventoryFilterMenu: string | null = null;
+  let inventoryFilterMenuPos: { top: number; left: number } = { top: 0, left: 0 };
   let inventoryPage = 1;
   let inventoryPerPage = 50;
   let inventoryExportStatus = "";
@@ -759,8 +760,17 @@
     return inventorySortField === field && inventorySortDirection === "desc";
   }
 
-  function toggleInventoryFilterMenu(key: string) {
-    activeInventoryFilterMenu = activeInventoryFilterMenu === key ? null : key;
+  function toggleInventoryFilterMenu(key: string, event?: MouseEvent) {
+    if (activeInventoryFilterMenu === key) {
+      activeInventoryFilterMenu = null;
+    } else {
+      activeInventoryFilterMenu = key;
+      if (event) {
+        const btn = event.currentTarget as HTMLElement;
+        const rect = btn.getBoundingClientRect();
+        inventoryFilterMenuPos = { top: rect.bottom + 6, left: rect.right };
+      }
+    }
   }
 
   function setInventoryFilterValue(key: InventoryFilterKey, value: string) {
@@ -1929,7 +1939,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("operation_code")}>
                       Opération{inventorySortIcon("operation_code")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("operation_code")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_code", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "operation_code"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -1953,7 +1963,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("operation_site")}>
                       Site{inventorySortIcon("operation_site")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("operation_site")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_site", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "operation_site"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -1977,7 +1987,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("operation_type")}>
                       Opération{inventorySortIcon("operation_type")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("operation_type")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_type", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "operation_type"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -2001,7 +2011,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("operation_responsable")}>
                       Responsable{inventorySortIcon("operation_responsable")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("operation_responsable")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_responsable", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "operation_responsable"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -2025,7 +2035,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("structure_type")}>
                       Structure{inventorySortIcon("structure_type")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("structure_type")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("structure_type", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "structure_type"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -2101,7 +2111,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("model_author")}>
                       Auteur{inventorySortIcon("model_author")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("model_author")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("model_author", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "model_author"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -2125,7 +2135,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("depositor")}>
                       Déposant{inventorySortIcon("depositor")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("depositor")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("depositor", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "depositor"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -2149,7 +2159,7 @@
                     <button class="th-sort-btn" type="button" on:click={() => toggleInventorySort("software")}>
                       Logiciel{inventorySortIcon("software")}
                     </button>
-                    <button class="th-filter-btn" type="button" on:click|stopPropagation={() => toggleInventoryFilterMenu("software")}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("software", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   {#if activeInventoryFilterMenu === "software"}
                     <div class="th-filter-popover" on:click|stopPropagation>
@@ -3038,11 +3048,11 @@
     min-width: 0.9rem;
     height: 0.9rem;
     text-align: center;
-    opacity: 0;
+    opacity: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transform: rotate(0deg);
+    transform: rotate(180deg);
     transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease;
   }
 
@@ -3051,12 +3061,20 @@
     opacity: 1;
   }
 
-  .th-sort-arrow.th-sort-arrow-desc {
+  .th-sort-arrow.th-sort-arrow-active:not(.th-sort-arrow-desc) {
+    transform: rotate(0deg);
+  }
+
+  .th-sort-arrow.th-sort-arrow-active.th-sort-arrow-desc {
     transform: rotate(180deg);
   }
 
   .th-sort-btn-with-arrow:hover .th-sort-arrow {
     color: var(--color-primary);
+  }
+
+  .th-sort-btn-with-arrow:hover .th-sort-arrow.th-sort-arrow-active {
+    opacity: 1;
   }
 
   .th-title-static {

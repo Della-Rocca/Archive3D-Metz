@@ -980,14 +980,6 @@
     }
   }
 
-  .file-card-dragover .file-drop-zone {
-    color: var(--color-secondary);
-  }
-  .file-card-dragover .file-drop-zone svg {
-    opacity: 0.8;
-    color: var(--color-secondary);
-  }
-
   /* Drop hint compact visible meme quand des fichiers sont presents */
   .file-drop-hint {
     display: flex;
@@ -1000,19 +992,6 @@
     color: var(--color-neutral-500);
     font-size: var(--font-size-xs);
     transition: all 0.2s;
-  }
-  .file-drop-hint svg {
-    opacity: 0.4;
-    flex-shrink: 0;
-  }
-  .file-card-dragover .file-drop-hint {
-    color: var(--color-secondary);
-    border-top-color: var(--color-secondary);
-    background: rgba(193, 122, 92, 0.04);
-  }
-  .file-card-dragover .file-drop-hint svg {
-    opacity: 0.8;
-    color: var(--color-secondary);
   }
 
   .file-card-header {
@@ -1051,21 +1030,12 @@
     flex: 1;
     min-width: 0;
   }
-  .file-card-header h3 {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--color-neutral-900);
-  }
   .required-mark {
     color: var(--color-error);
   }
   .file-card-count {
     font-size: var(--font-size-xs);
     color: var(--color-neutral-600);
-  }
-  .file-card-header .btn {
-    flex-shrink: 0;
   }
   .btn-sm {
     padding: var(--spacing-xs) var(--spacing-md);
@@ -1084,10 +1054,6 @@
     text-align: center;
     transition: all 0.2s;
   }
-  .file-drop-zone svg {
-    opacity: 0.35;
-    transition: all 0.2s;
-  }
   .file-drop-formats {
     font-size: 0.65rem;
     color: var(--color-neutral-500);
@@ -1100,17 +1066,6 @@
     margin: 0;
     max-height: 160px;
     overflow-y: auto;
-  }
-  .file-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--color-neutral-200);
-    border-radius: var(--border-radius-sm);
-    margin-bottom: var(--spacing-xs);
-    font-size: var(--font-size-xs);
-    gap: var(--spacing-xs);
   }
   .file-name {
     overflow: hidden;
@@ -1133,9 +1088,6 @@
     flex-shrink: 0;
     transition: all 0.15s;
     opacity: 0;
-  }
-  .file-list li:hover .file-remove {
-    opacity: 1;
   }
   .file-remove:hover {
     background: var(--color-error-bg);
@@ -1172,9 +1124,6 @@
     font-size: var(--font-size-xs);
     color: var(--color-neutral-800);
   }
-  .recap-warnings-list li {
-    margin-bottom: 2px;
-  }
 
   .recap-block {
     background: var(--color-neutral-200);
@@ -1193,18 +1142,6 @@
     padding: var(--spacing-sm) var(--spacing-lg);
     background: var(--color-neutral-300);
     border-bottom: 1px solid var(--color-neutral-400);
-  }
-  .recap-block-header h3 {
-    margin: 0;
-    flex: 1;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-neutral-700);
-  }
-  .recap-block-header svg {
-    color: var(--color-primary);
   }
   .recap-edit-btn {
     background: none;

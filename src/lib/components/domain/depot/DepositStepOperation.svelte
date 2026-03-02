@@ -135,10 +135,6 @@
         margin-left: 2px;
     }
 
-    .meta-label {
-        margin-top: var(--spacing-md);
-    }
-
     .field-error {
         font-size: var(--font-size-xs);
         color: var(--color-error);

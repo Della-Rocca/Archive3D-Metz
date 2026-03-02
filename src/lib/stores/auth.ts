@@ -1,4 +1,4 @@
-import { writable, derived, get } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { goto } from '$app/navigation';
 
 export type UserRole = 'guest' | 'admin';
@@ -9,7 +9,7 @@ export interface AuthState {
 }
 
 function createAuthStore() {
-  const { subscribe, set, update } = writable<AuthState>({
+  const { subscribe, set } = writable<AuthState>({
     isAuthenticated: false,
     role: null
   });
@@ -30,16 +30,6 @@ function createAuthStore() {
         role: null
       });
       goto('/login');
-    },
-
-    hasPermission(requiredRole: UserRole): boolean {
-      let currentState: AuthState = { isAuthenticated: false, role: null };
-      subscribe(state => currentState = state)();
-
-      if (!currentState.isAuthenticated) return false;
-      if (requiredRole === 'guest') return true;
-      if (requiredRole === 'admin') return currentState.role === 'admin';
-      return false;
     }
   };
 }
@@ -47,7 +37,7 @@ function createAuthStore() {
 export const authStore = createAuthStore();
 
 // Permissions par rôle
-export const permissions = {
+const permissions = {
   guest: {
     canViewArchive: true,
     canDeposit: true,

@@ -19,10 +19,9 @@ Permet de parcourir, visualiser et inventorier les structures archéologiques nu
 
 Télécharge le fichier correspondant à ton système depuis les [releases GitHub](../../releases) :
 
-| Système | Fichier |
-|---|---|
-| macOS | `[Archive-Metz.dmg](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)` |
-| Windows | `[Archive-Metz.exe](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)` |
+
+macOS | [Archive-Metz.dmg](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)
+Windows | [Archive-Metz.exe](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)
 
 Lance l'installateur et suis les instructions.
 

@@ -49,3 +49,5 @@ npm run dev
 - **Backend** — Tauri 2 (Rust)
 - **3D** — Three.js
 - **Builds CI** — GitHub Actions (macOS + Windows)
+
+**Produit et développé par François de Senneville**

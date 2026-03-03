@@ -1006,6 +1006,8 @@
   );
 </script>
 
+<svelte:window on:click={() => { activeInventoryFilterMenu = null; }} />
+
 <main class="archive-page" class:archive-page-inventory={activeTab === "inventory"}>
   <!-- HEADER -->
   <div class="page-header">
@@ -1482,114 +1484,78 @@
         <div class="stat-cards">
           <div class="stat-card">
             <div class="stat-icon icon-structures">
-              <svg viewBox="0 0 24 24" fill="none" width="22" height="22"
-                ><path
-                  d="M20 7L12 3L4 7M20 7L12 11M20 7V17L12 21M12 11L4 7M12 11V21M4 7V17L12 21"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg
-              >
+              <!-- Monument / colonnes antiques -->
+              <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+                <path d="M3 21H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M5 21V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M8 21V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M16 21V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M19 21V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M4 10H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M12 4L21 8H3L12 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
             </div>
             <div class="stat-body">
-              <span class="stat-value"
-                >{formatNumber(stats.total_structures)}</span
-              >
+              <span class="stat-value">{formatNumber(stats.total_structures)}</span>
               <span class="stat-label">Structures archivées</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon icon-operations">
-              <svg viewBox="0 0 24 24" fill="none" width="22" height="22"
-                ><path
-                  d="M4 7H20M4 12H20M4 17H14M7 4V20M17 4V20"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg
-              >
+              <!-- Appareil photo -->
+              <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+                <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
             </div>
             <div class="stat-body">
-              <span class="stat-value"
-                >{formatNumber(stats.total_photos)}</span
-              >
+              <span class="stat-value">{formatNumber(stats.total_photos)}</span>
               <span class="stat-label">Photos</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon icon-size">
-              <svg viewBox="0 0 24 24" fill="none" width="22" height="22"
-                ><path
-                  d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69752 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69752 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.998 12 21.998C12.3511 21.998 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg
-              >
+              <!-- Images empilées + poids -->
+              <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+                <rect x="3" y="6" width="16" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M6 6V5C6 4.44772 6.44772 4 7 4H20C20.5523 4 21 4.44772 21 5V16C21 16.5523 20.5523 17 20 17H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="8" cy="10" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M3 16L7 12L10 15L13 12L19 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
             <div class="stat-body">
-              <span class="stat-value"
-                >{formatSize(stats.total_photos_size_bytes)}</span
-              >
+              <span class="stat-value">{formatSize(stats.total_photos_size_bytes)}</span>
               <span class="stat-label">Taille photos</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon icon-models">
-              <svg viewBox="0 0 24 24" fill="none" width="22" height="22"
-                ><path
-                  d="M12 2L2 7L12 12L22 7L12 2Z"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /><path
-                  d="M2 17L12 22L22 17"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /><path
-                  d="M2 12L12 17L22 12"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg
-              >
+              <!-- Cube 3D -->
+              <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+                <path d="M12 3L21 8V16L12 21L3 16V8L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M12 3V21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M3 8L12 13L21 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
             <div class="stat-body">
-              <span class="stat-value"
-                >{formatSize(stats.total_models_size_bytes)}</span
-              >
+              <span class="stat-value">{formatSize(stats.total_models_size_bytes)}</span>
               <span class="stat-label">Modèles 3D</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon icon-archive-size">
-              <svg viewBox="0 0 24 24" fill="none" width="22" height="22"
-                ><path
-                  d="M3 7C3 5.89543 3.89543 5 5 5H9L11 7H19C20.1046 7 21 7.89543 21 9V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /><path
-                  d="M8 12H16"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg
-              >
+              <!-- Serveur / disque dur stack -->
+              <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+                <rect x="2" y="3" width="20" height="5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="2" y="10" width="20" height="5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="2" y="17" width="20" height="4" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="18" cy="5.5" r="1" fill="currentColor"/>
+                <circle cx="18" cy="12.5" r="1" fill="currentColor"/>
+                <circle cx="18" cy="19" r="1" fill="currentColor"/>
+              </svg>
             </div>
             <div class="stat-body">
-              <span class="stat-value"
-                >{formatSize(stats.total_size_bytes)}</span
-              >
+              <span class="stat-value">{formatSize(stats.total_size_bytes)}</span>
               <span class="stat-label">Taille dossier archive</span>
             </div>
           </div>
@@ -1941,22 +1907,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_code", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "operation_code"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryOperationCodeOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterOperationCode === option}
-                            on:click={() => setInventoryFilterValue("operation_code", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-site">
                   <div class="th-head">
@@ -1965,22 +1915,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_site", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "operation_site"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryOperationSiteOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterOperationSite === option}
-                            on:click={() => setInventoryFilterValue("operation_site", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-type">
                   <div class="th-head">
@@ -1989,22 +1923,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_type", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "operation_type"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryOperationTypeOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterOperationType === option}
-                            on:click={() => setInventoryFilterValue("operation_type", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-author">
                   <div class="th-head">
@@ -2013,22 +1931,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("operation_responsable", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "operation_responsable"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryResponsableOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterResponsable === option}
-                            on:click={() => setInventoryFilterValue("operation_responsable", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-type">
                   <div class="th-head">
@@ -2037,22 +1939,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("structure_type", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "structure_type"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryStructureTypeOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterStructureType === option}
-                            on:click={() => setInventoryFilterValue("structure_type", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-number">
                   <div class="th-head">
@@ -2113,22 +1999,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("model_author", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "model_author"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryAuthorOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterModelAuthor === option}
-                            on:click={() => setInventoryFilterValue("model_author", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-author">
                   <div class="th-head">
@@ -2137,22 +2007,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("depositor", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "depositor"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventoryDepositorOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterDepositor === option}
-                            on:click={() => setInventoryFilterValue("depositor", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-author">
                   <div class="th-head">
@@ -2161,22 +2015,6 @@
                     </button>
                     <button class="th-filter-btn" type="button" on:click|stopPropagation={(e) => toggleInventoryFilterMenu("software", e)}><svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true"><path d="M3 5H21L14 13V19L10 21V13L3 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
-                  {#if activeInventoryFilterMenu === "software"}
-                    <div class="th-filter-popover" on:click|stopPropagation>
-                      <div class="th-filter-options">
-                        {#each inventorySoftwareOptions as option}
-                          <button
-                            type="button"
-                            class="th-filter-option-btn"
-                            class:selected={inventoryFilterSoftware === option}
-                            on:click={() => setInventoryFilterValue("software", option)}
-                          >
-                            {option}
-                          </button>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
                 </th>
                 <th class="col-date">
                   <div class="th-head">
@@ -2220,6 +2058,50 @@
               </table>
             </div>
           </div>
+
+          {#if activeInventoryFilterMenu}
+            <div
+              class="th-filter-popover th-filter-popover-fixed"
+              style="top: {inventoryFilterMenuPos.top}px; left: {inventoryFilterMenuPos.left}px;"
+              on:click|stopPropagation
+            >
+              <div class="th-filter-options">
+                {#if activeInventoryFilterMenu === "operation_code"}
+                  {#each inventoryOperationCodeOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterOperationCode === option} on:click={() => setInventoryFilterValue("operation_code", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "operation_site"}
+                  {#each inventoryOperationSiteOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterOperationSite === option} on:click={() => setInventoryFilterValue("operation_site", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "operation_type"}
+                  {#each inventoryOperationTypeOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterOperationType === option} on:click={() => setInventoryFilterValue("operation_type", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "operation_responsable"}
+                  {#each inventoryResponsableOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterResponsable === option} on:click={() => setInventoryFilterValue("operation_responsable", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "structure_type"}
+                  {#each inventoryStructureTypeOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterStructureType === option} on:click={() => setInventoryFilterValue("structure_type", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "model_author"}
+                  {#each inventoryAuthorOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterModelAuthor === option} on:click={() => setInventoryFilterValue("model_author", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "depositor"}
+                  {#each inventoryDepositorOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterDepositor === option} on:click={() => setInventoryFilterValue("depositor", option)}>{option}</button>
+                  {/each}
+                {:else if activeInventoryFilterMenu === "software"}
+                  {#each inventorySoftwareOptions as option}
+                    <button type="button" class="th-filter-option-btn" class:selected={inventoryFilterSoftware === option} on:click={() => setInventoryFilterValue("software", option)}>{option}</button>
+                  {/each}
+                {/if}
+              </div>
+            </div>
+          {/if}
 
           <button
             type="button"
@@ -3043,7 +2925,7 @@
   }
 
   .th-sort-arrow {
-    color: var(--color-neutral-500);
+    color: #183353;
     flex-shrink: 0;
     min-width: 0.9rem;
     height: 0.9rem;
@@ -3056,8 +2938,12 @@
     transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease;
   }
 
+  .th-sort-arrow svg path {
+    stroke-width: 2.8;
+  }
+
   .th-sort-arrow.th-sort-arrow-active {
-    color: var(--color-neutral-900);
+    color: #102743;
     opacity: 1;
   }
 
@@ -3130,6 +3016,14 @@
     border-radius: 8px;
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
     padding: 4px;
+  }
+
+  .th-filter-popover-fixed {
+    position: fixed;
+    top: unset;
+    right: unset;
+    z-index: 9999;
+    transform: translateX(-100%);
   }
 
   .th-filter-options {

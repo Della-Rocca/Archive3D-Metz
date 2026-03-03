@@ -1,6 +1,6 @@
 # Archive Metz
 
-Application desktop de consultation et gestion de l'archive 3D patrimoniale de Metz.
+Application desktop de consultation et gestion de l'archive 3D patrimoniale du service archéologique de Metz.
 
 Permet de parcourir, visualiser et inventorier les structures archéologiques numérisées en 3D, avec consultation des photos, métadonnées et statistiques de l'archive.
 

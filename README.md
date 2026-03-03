@@ -21,8 +21,8 @@ Télécharge le fichier correspondant à ton système depuis les [releases GitHu
 
 | Système | Fichier |
 |---|---|
-| macOS | `.dmg` |
-| Windows | `.exe` |
+| macOS | `[Archive-Metz.dmg](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)` |
+| Windows | `[Archive-Metz.exe](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)` |
 
 Lance l'installateur et suis les instructions.
 

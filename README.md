@@ -1,6 +1,6 @@
 # Archive Metz
 
-Application desktop de consultation et gestion de l'archive 3D patrimoniale de Metz.
+Application desktop de consultation et gestion de l'archive 3D patrimoniale du service archéologique de Metz.
 
 Permet de parcourir, visualiser et inventorier les structures archéologiques numérisées en 3D, avec consultation des photos, métadonnées et statistiques de l'archive.
 
@@ -19,13 +19,13 @@ Permet de parcourir, visualiser et inventorier les structures archéologiques nu
 
 Télécharge le fichier correspondant à ton système depuis les [releases GitHub](../../releases) :
 
-| Système | Fichier |
-|---|---|
-| macOS | `.dmg` |
-| Windows | `.exe` |
 
-Lance l'installateur et suis les instructions.
+- macOS | [Archive-Metz.dmg](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.dmg)
+- Windows | [Archive-Metz.exe](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive.Metz.exe)
 
+L'application n'étant pas signée, un message d'avertissement vous indiquera que le fichier ne contient aucune signature valide et que l'identité de l'éditeur est inconnue. Cela est normal, l'application n'est pas signée, ce qui déclenche un processus de sécurité. Vous pouvez passer outre.
+
+**MDP admin de l'app : 1 (par défaut, modifiable dans les paramètres)**
 ---
 
 ## Développement
@@ -42,13 +42,6 @@ Lance l'installateur et suis les instructions.
 npm install
 npm run dev
 ```
-
-### Builder
-
-```bash
-npm run build
-```
-
 ---
 
 ## Stack technique
@@ -57,3 +50,5 @@ npm run build
 - **Backend** — Tauri 2 (Rust)
 - **3D** — Three.js
 - **Builds CI** — GitHub Actions (macOS + Windows)
+
+**Produit et développé par François de Senneville**

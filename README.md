@@ -25,6 +25,7 @@ Télécharge le fichier correspondant à ton système depuis les [releases GitHu
 
 L'application n'étant pas signée, un message d'avertissement vous indiquera que le fichier ne contient aucune signature valide et que l'identité de l'éditeur est inconnue. Cela est normal, l'application n'est pas signée, ce qui déclenche un processus de sécurité. Vous pouvez passer outre.
 
+**MDP admin de l'app : 1 (par défaut, modifiable dans les paramètres)**
 ---
 
 ## Développement

@@ -65,15 +65,16 @@ fn get_system_username() -> String {
 
 /// Écrit une entrée d'audit dans le fichier de logs
 pub fn log_audit(config: &AppConfig, entry: &AuditEntry) -> Result<(), String> {
-    // Créer le dossier de logs s'il n'existe pas
-    let logs_dir = PathBuf::from(&config.logs_path);
-    if !logs_dir.exists() {
-        std::fs::create_dir_all(&logs_dir)
-            .map_err(|e| format!("Erreur création dossier logs: {}", e))?;
-    }
+    // logs_path pointe directement vers audit.log
+    let audit_file = PathBuf::from(&config.logs_path);
 
-    // Chemin du fichier audit.log
-    let audit_file = logs_dir.join("audit.log");
+    // Créer le dossier parent s'il n'existe pas
+    if let Some(parent) = audit_file.parent() {
+        if !parent.exists() {
+            std::fs::create_dir_all(parent)
+                .map_err(|e| format!("Erreur création dossier logs: {}", e))?;
+        }
+    }
 
     // Ouvrir le fichier en mode append
     let mut file = OpenOptions::new()
@@ -107,7 +108,7 @@ pub struct LogFilter {
 
 /// Lit les entrées d'audit depuis le fichier de logs
 pub fn read_audit_logs(config: &AppConfig, filter: LogFilter) -> Result<Vec<AuditEntry>, String> {
-    let audit_file = PathBuf::from(&config.logs_path).join("audit.log");
+    let audit_file = PathBuf::from(&config.logs_path);
 
     // Si le fichier n'existe pas, retourner une liste vide
     if !audit_file.exists() {
@@ -226,7 +227,7 @@ pub fn reset_validation_history(
         .lock()
         .map_err(|e| format!("Erreur accès config: {}", e))?;
 
-    let audit_file = PathBuf::from(&config.logs_path).join("audit.log");
+    let audit_file = PathBuf::from(&config.logs_path);
     if !audit_file.exists() {
         return Ok(());
     }

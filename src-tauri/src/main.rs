@@ -600,7 +600,7 @@ fn move_structure_between_spaces(
 }
 
 fn revision_tags_file(config: &AppConfig) -> PathBuf {
-    PathBuf::from(&config.logs_path).join("revision-tags.json")
+    PathBuf::from(&config.revision_tags_path)
 }
 
 fn read_revision_tags(config: &AppConfig) -> Result<std::collections::HashMap<String, RevisionTag>, String> {
@@ -621,12 +621,14 @@ fn write_revision_tags(
     config: &AppConfig,
     tags: &std::collections::HashMap<String, RevisionTag>,
 ) -> Result<(), String> {
-    let logs_dir = PathBuf::from(&config.logs_path);
-    if !logs_dir.exists() {
-        fs::create_dir_all(&logs_dir)
-            .map_err(|e| format!("Erreur création dossier logs: {}", e))?;
-    }
     let file = revision_tags_file(config);
+    // Créer le dossier parent si nécessaire
+    if let Some(parent) = file.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("Erreur création dossier revision-tags: {}", e))?;
+        }
+    }
     let json = serde_json::to_string_pretty(tags)
         .map_err(|e| format!("Erreur sérialisation revision tags: {}", e))?;
     fs::write(file, json).map_err(|e| format!("Erreur écriture revision-tags.json: {}", e))
@@ -1491,6 +1493,7 @@ fn main() {
             config::validate_config_paths,
             config::preview_validate_config_paths,
             config::verify_admin_password,
+            config::ensure_default_files,
             logging::get_audit_logs,
             logging::get_recent_validations,
             logging::reset_validation_history,

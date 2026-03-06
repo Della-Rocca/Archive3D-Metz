@@ -197,8 +197,7 @@
     align-self: stretch;
   }
 
-  .modes-divider::before,
-  .modes-divider::after {
+  .modes-divider::before {
     content: "";
     width: 1px;
     background: linear-gradient(180deg, transparent 0%, rgba(148, 163, 184, 0.5) 18%, rgba(148, 163, 184, 0.5) 82%, transparent 100%);

@@ -9,6 +9,7 @@
     archive_path: string;
     presets_path: string;
     logs_path: string;
+    revision_tags_path: string;
     admin_password: string;
   }
 
@@ -24,15 +25,19 @@
     archive_path: "",
     presets_path: "",
     logs_path: "",
+    revision_tags_path: "",
     admin_password: "",
   };
 
-  type PathField = "depot_path" | "validation_path" | "archive_path" | "presets_path" | "logs_path";
+  type PathField = "depot_path" | "validation_path" | "archive_path" | "presets_path" | "logs_path" | "revision_tags_path";
   type PathFieldMeta = {
     field: PathField;
     label: string;
     hint: string;
   };
+
+  // Champs qui utilisent un sélecteur de fichier (et non de dossier)
+  const filePickerFields: PathField[] = ["presets_path", "logs_path", "revision_tags_path"];
 
   const pathFieldMeta: PathFieldMeta[] = [
     {
@@ -53,12 +58,17 @@
     {
       field: "presets_path",
       label: "Fichier metadata-presets.json",
-      hint: "Référentiel des listes de métadonnées.",
+      hint: "Référentiel des listes de métadonnées. Créé automatiquement avec des listes vides si le fichier est absent.",
     },
     {
       field: "logs_path",
-      label: "Dossier Logs",
-      hint: "Historique des actions et audits.",
+      label: "Fichier audit.log",
+      hint: "Journal de traçabilité. Créé automatiquement à la première action si le fichier est absent.",
+    },
+    {
+      field: "revision_tags_path",
+      label: "Fichier revision-tags.json",
+      hint: "Marques de révision pour les structures. Créé automatiquement avec un objet vide si le fichier est absent.",
     },
   ];
 
@@ -66,6 +76,8 @@
   let saving = false;
   let status = "";
   let statusType: "success" | "error" | "" = "";
+  // Snapshot de la config sauvegardée (pour afficher l'ancien chemin en cas de modification)
+  let savedConfig: AppConfig | null = null;
   let validationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let readyForLiveValidation = false;
   type FieldIssues = Record<PathField, { errors: string[]; warnings: string[] }>;
@@ -75,6 +87,7 @@
     archive_path: { errors: [], warnings: [] },
     presets_path: { errors: [], warnings: [] },
     logs_path: { errors: [], warnings: [] },
+    revision_tags_path: { errors: [], warnings: [] },
   });
 
   const fieldMessageMatchers: Record<PathField, string[]> = {
@@ -82,7 +95,8 @@
     validation_path: ["validation"],
     archive_path: ["archive"],
     presets_path: ["metadata-presets", "presets"],
-    logs_path: ["logs"],
+    logs_path: ["logs", "audit"],
+    revision_tags_path: ["revision-tags", "revision_tags"],
   };
 
   function mapMessageToField(message: string): PathField | null {
@@ -119,8 +133,8 @@
   function isPathFieldValid(field: PathField): boolean {
     const hasValue = config[field].trim().length > 0;
     if (!hasValue) return false;
-    const issues = pathFieldIssues[field];
-    return issues.errors.length === 0 && issues.warnings.length === 0;
+    // Les avertissements (ex: "sera créé") ne bloquent pas le compteur
+    return pathFieldIssues[field].errors.length === 0;
   }
 
   $: validationErrorCount = pathValidation?.errors.length ?? 0;
@@ -128,12 +142,16 @@
   $: validationIsHealthy = validationErrorCount === 0 && validationWarningCount === 0;
   const totalPathCount = pathFieldMeta.length;
   $: configuredPathCount = pathFieldMeta.reduce((count, entry) => {
-    return count + (isPathFieldValid(entry.field) ? 1 : 0);
+    const field = entry.field;
+    const hasValue = config[field].trim().length > 0;
+    const hasNoErrors = pathFieldIssues[field].errors.length === 0;
+    return count + (hasValue && hasNoErrors ? 1 : 0);
   }, 0);
 
   onMount(async () => {
     try {
       config = await invoke<AppConfig>("get_app_config");
+      savedConfig = { ...config };
       pathValidation = await invoke<PathValidationResult>("preview_validate_config_paths", { newConfig: config });
       readyForLiveValidation = true;
     } catch (e) {
@@ -172,10 +190,22 @@
     scheduleLiveValidation();
   }
 
-  async function pickFolder(field: PathField) {
+  async function pickPath(field: PathField) {
     const fieldMeta = pathFieldMeta.find((entry) => entry.field === field);
-    const title = fieldMeta ? `Sélectionner: ${fieldMeta.label}` : "Sélectionner un dossier";
-    const result = await open({ directory: true, title });
+    const title = fieldMeta ? `Sélectionner: ${fieldMeta.label}` : "Sélectionner";
+    const isFile = filePickerFields.includes(field);
+    let result: string | string[] | null;
+    if (isFile) {
+      let filters;
+      if (field === "presets_path" || field === "revision_tags_path") {
+        filters = [{ name: "JSON", extensions: ["json"] }];
+      } else {
+        filters = [{ name: "Log", extensions: ["log"] }];
+      }
+      result = await open({ directory: false, multiple: false, title, filters });
+    } else {
+      result = await open({ directory: true, title });
+    }
     if (result) {
       config[field] = result as string;
     }
@@ -187,7 +217,10 @@
     statusType = "";
     try {
       await invoke("update_app_config", { newConfig: config });
+      // Créer automatiquement presets et audit.log si absents
+      await invoke("ensure_default_files").catch(() => {});
       pathValidation = await invoke<PathValidationResult>("preview_validate_config_paths", { newConfig: config });
+      savedConfig = { ...config };
       status = "Configuration sauvegardée.";
       statusType = "success";
     } catch (e) {
@@ -248,10 +281,20 @@
                     pathFieldIssues[fieldMeta.field].warnings.length > 0}
                   bind:value={config[fieldMeta.field]}
                 />
-                <button class="btn btn-secondary path-browse-btn" on:click={() => pickFolder(fieldMeta.field)}
+                <button class="btn btn-secondary path-browse-btn" on:click={() => pickPath(fieldMeta.field)}
                   >Parcourir</button
                 >
               </div>
+              {#if savedConfig && savedConfig[fieldMeta.field] && savedConfig[fieldMeta.field] !== config[fieldMeta.field]}
+                <div class="previous-path">
+                  <span>Chemin précédent :</span>
+                  <button
+                    class="restore-btn"
+                    title="Restaurer ce chemin"
+                    on:click={() => { if (savedConfig) config[fieldMeta.field] = savedConfig[fieldMeta.field]; }}
+                  >{savedConfig[fieldMeta.field]}</button>
+                </div>
+              {/if}
               {#if pathFieldIssues[fieldMeta.field].errors.length > 0}
                 <div class="field-messages">
                   {#each pathFieldIssues[fieldMeta.field].errors as err}
@@ -546,6 +589,31 @@
   .input-warning {
     border-color: #f2c66d;
     box-shadow: 0 0 0 2px rgba(242, 198, 109, 0.15);
+  }
+
+  .previous-path {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--color-neutral-600);
+  }
+
+  .restore-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.72rem;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-family: ui-monospace, monospace;
+    text-decoration: underline;
+    text-align: left;
+    word-break: break-all;
+  }
+
+  .restore-btn:hover {
+    color: var(--color-primary-hover);
   }
 
   .field-messages {

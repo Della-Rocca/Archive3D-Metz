@@ -94,6 +94,12 @@
     >
       Archive
     </a>
+    <a
+      href="/tutorial"
+      class:selected={$page.url.pathname.startsWith("/tutorial")}
+    >
+      Tutoriel
+    </a>
     <div class="nav-user">
       {#if canAccessConfig}
         <a class="settings-btn" href="/settings" title="Paramètres">

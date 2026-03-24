@@ -117,7 +117,7 @@
       setStatus("idle", "");
     } catch (error) {
       console.error("3D viewer load error:", error);
-      setStatus("error", "Impossible de charger le modèle 3D pour ce format.");
+      setStatus("error", "Impossible de charger le modèle 3D.");
     }
   }
 

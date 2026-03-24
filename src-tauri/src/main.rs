@@ -275,6 +275,14 @@ fn move_dir(src: &Path, dest: &Path) -> Result<(), String> {
     }
 }
 
+fn is_ignored_sidecar_file(path: &Path) -> bool {
+    let Some(name) = path.file_name().and_then(|value| value.to_str()) else {
+        return false;
+    };
+
+    name.starts_with("._") || name.eq_ignore_ascii_case("thumbs.db") || name.eq_ignore_ascii_case(".ds_store")
+}
+
 fn list_files_in_dir(path: &Path) -> Result<Vec<String>, String> {
     if !path.exists() {
         return Ok(vec![]);
@@ -286,7 +294,7 @@ fn list_files_in_dir(path: &Path) -> Result<Vec<String>, String> {
     {
         let entry = entry.map_err(|e| format!("Erreur entrée dir: {}", e))?;
         let p = entry.path();
-        if p.is_file() {
+        if p.is_file() && !is_ignored_sidecar_file(&p) {
             let s = p
                 .to_str()
                 .ok_or_else(|| "Chemin fichier invalide".to_string())?
@@ -304,7 +312,8 @@ fn has_any_file(path: &Path) -> bool {
 
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries.flatten() {
-            if entry.path().is_file() {
+            let entry_path = entry.path();
+            if entry_path.is_file() && !is_ignored_sidecar_file(&entry_path) {
                 return true;
             }
         }
@@ -1295,6 +1304,22 @@ fn get_structure_file_info(
 }
 
 #[tauri::command]
+fn read_structure_file_base64(
+    config_state: State<AppConfigState>,
+    path: String,
+) -> Result<String, String> {
+    let config = config_state
+        .lock()
+        .map_err(|e| format!("Erreur accès config: {}", e))?;
+    let safe_path = canonicalize_structure_in_known_roots(&config, &path)?;
+    let bytes = fs::read(&safe_path)
+        .map_err(|e| format!("Erreur lecture fichier {:?}: {}", safe_path, e))?;
+
+    use base64::Engine;
+    Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
+}
+
+#[tauri::command]
 fn get_image_preview_data_url(
     config_state: State<AppConfigState>,
     image_path: String,
@@ -1542,6 +1567,7 @@ fn main() {
             get_structure_summary,
             get_structure_details,
             get_structure_file_info,
+            read_structure_file_base64,
             get_image_preview_data_url,
             get_metadata_presets,
             update_metadata_presets,

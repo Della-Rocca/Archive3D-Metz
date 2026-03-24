@@ -1,5 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
+  import { replaceState } from "$app/navigation";
   import { afterUpdate, onDestroy, onMount } from "svelte";
   import ArchiveMetadataPanel from "$lib/components/archive/ArchiveMetadataPanel.svelte";
   import Archive3DViewer from "$lib/components/archive/Archive3DViewer.svelte";
@@ -330,7 +331,7 @@
 
     const queryString = params.toString();
     const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ""}`;
-    window.history.replaceState(window.history.state, "", nextUrl);
+    replaceState(nextUrl, {});
   }
 
   // --- Consultation functions ---
@@ -503,18 +504,29 @@
     showOrthoPreviewModal = false;
   }
 
-  async function loadOrthoPreview(path: string, token: number) {
+  async function loadOrthoPreview(paths: string[], token: number) {
     orthoPreviewLoading = true;
     orthoPreviewError = null;
     orthoPreviewSrc = null;
-    orthoPreviewPath = path;
+    orthoPreviewPath = null;
 
     try {
       if (token !== detailRequestToken) return;
-      orthoPreviewSrc = await invoke<string>("get_image_preview_data_url", {
-        imagePath: path,
-        maxDimension: 1600,
-      });
+      let lastError: unknown = null;
+      for (const path of paths) {
+        try {
+          orthoPreviewPath = path;
+          orthoPreviewSrc = await invoke<string>("get_image_preview_data_url", {
+            imagePath: path,
+            maxDimension: 1600,
+          });
+          return;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      throw lastError ?? new Error("Aucune orthophoto exploitable.");
     } catch (error) {
       if (token !== detailRequestToken) return;
       orthoPreviewError = stringifyError(
@@ -548,7 +560,7 @@
 
       selectedDetails = details;
       if (details.orthos.length > 0) {
-        await loadOrthoPreview(details.orthos[0], token);
+        await loadOrthoPreview(details.orthos, token);
       } else {
         orthoPreviewError = "Aucune orthophoto disponible sur cette structure.";
       }

@@ -22,6 +22,13 @@
   let status: "idle" | "loading" | "error" | "empty" = "idle";
   let statusMessage = "Sélectionnez une structure pour afficher son modèle 3D.";
 
+  function fileExtension(path: string): string {
+    const normalized = path.replace(/\\/g, "/");
+    const name = normalized.split("/").pop() ?? normalized;
+    const dotIndex = name.lastIndexOf(".");
+    return dotIndex >= 0 ? name.slice(dotIndex + 1).toLowerCase() : "";
+  }
+
   function toModelUrl(path: string): string {
     if (/^(https?:|tauri:|asset:|file:|blob:)/.test(path)) return path;
     return convertFileSrc(path.replace(/\\/g, "/"));
@@ -77,22 +84,40 @@
     clearCurrentModel();
 
     try {
-      const [{ GLTFLoader }] = await Promise.all([
-        import("three/examples/jsm/loaders/GLTFLoader.js"),
-      ]);
-
-      const loader = new GLTFLoader();
       const url = toModelUrl(source);
-      const gltf = await loader.loadAsync(url);
-      if (disposed) return;
+      const extension = fileExtension(source);
 
-      rootModel = gltf.scene;
+      if (extension === "glb" || extension === "gltf") {
+        const [{ GLTFLoader }] = await Promise.all([
+          import("three/examples/jsm/loaders/GLTFLoader.js"),
+        ]);
+
+        const loader = new GLTFLoader();
+        const gltf = await loader.loadAsync(url);
+        if (disposed) return;
+        rootModel = gltf.scene;
+      } else if (extension === "obj") {
+        const [{ OBJLoader }] = await Promise.all([
+          import("three/examples/jsm/loaders/OBJLoader.js"),
+        ]);
+
+        const loader = new OBJLoader();
+        rootModel = await loader.loadAsync(url);
+        if (disposed) return;
+      } else {
+        throw new Error(`Format de modele non pris en charge: ${extension || "inconnu"}`);
+      }
+
+      if (!rootModel) {
+        throw new Error("Aucun objet 3D charge.");
+      }
+
       scene.add(rootModel);
       centerCameraOnObject(rootModel);
       setStatus("idle", "");
     } catch (error) {
       console.error("3D viewer load error:", error);
-      setStatus("error", "Impossible de charger le modèle 3D.");
+      setStatus("error", "Impossible de charger le modèle 3D pour ce format.");
     }
   }
 

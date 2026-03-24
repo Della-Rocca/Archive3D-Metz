@@ -14,9 +14,11 @@ use fs_safety::{
     safe_relative_from_root, safe_segment,
 };
 use gltf::mesh::Mode;
+use image::ImageEncoder;
 use logging::{log_audit, AuditAction, AuditEntry};
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::io::Cursor;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
@@ -1292,6 +1294,63 @@ fn get_structure_file_info(
     })
 }
 
+#[tauri::command]
+fn get_image_preview_data_url(
+    config_state: State<AppConfigState>,
+    image_path: String,
+    max_dimension: Option<u32>,
+) -> Result<String, String> {
+    let config = config_state
+        .lock()
+        .map_err(|e| format!("Erreur accès config: {}", e))?;
+
+    let allowed_roots = canonicalize_existing_roots(&[
+        config.depot_path.clone(),
+        config.validation_path.clone(),
+        config.archive_path.clone(),
+    ])?;
+    if allowed_roots.is_empty() {
+        return Err("Aucune racine de stockage valide n'est configurée".to_string());
+    }
+
+    let safe_path =
+        canonicalize_in_allowed_roots(Path::new(&image_path), &allowed_roots)?;
+    let requested_max = max_dimension.unwrap_or(1600).clamp(256, 4096);
+
+    let reader = image::ImageReader::open(&safe_path)
+        .map_err(|e| format!("Erreur ouverture image {:?}: {}", safe_path, e))?;
+    let image = reader
+        .decode()
+        .map_err(|e| format!("Erreur décodage image {:?}: {}", safe_path, e))?;
+
+    let preview = if image.width() > requested_max || image.height() > requested_max {
+        image.thumbnail(requested_max, requested_max)
+    } else {
+        image
+    };
+
+    let rgba = preview.to_rgba8();
+    let mut png_bytes = Vec::new();
+    {
+        let mut cursor = Cursor::new(&mut png_bytes);
+        image::codecs::png::PngEncoder::new(&mut cursor)
+            .write_image(
+                rgba.as_raw(),
+                rgba.width(),
+                rgba.height(),
+                image::ExtendedColorType::Rgba8,
+            )
+            .map_err(|e| format!("Erreur encodage aperçu {:?}: {}", safe_path, e))?;
+    }
+
+    let encoded = {
+        use base64::Engine;
+        base64::engine::general_purpose::STANDARD.encode(png_bytes)
+    };
+
+    Ok(format!("data:image/png;base64,{}", encoded))
+}
+
 /// Ouvre l'explorateur de fichiers et sélectionne le chemin spécifié
 #[tauri::command]
 fn reveal_in_explorer(config_state: State<AppConfigState>, path: String) -> Result<(), String> {
@@ -1483,6 +1542,7 @@ fn main() {
             get_structure_summary,
             get_structure_details,
             get_structure_file_info,
+            get_image_preview_data_url,
             get_metadata_presets,
             update_metadata_presets,
             count_model_polygons,

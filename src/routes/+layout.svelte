@@ -13,7 +13,7 @@
   function syncTopnavHeight() {
     if (typeof document === "undefined") return;
     const topnavHeight =
-      !isLoginPage && topnavEl ? Math.ceil(topnavEl.getBoundingClientRect().height) : 0;
+      !hideTopnav && topnavEl ? Math.ceil(topnavEl.getBoundingClientRect().height) : 0;
     document.documentElement.style.setProperty("--app-topnav-height", `${topnavHeight}px`);
   }
 
@@ -49,7 +49,7 @@
     };
   });
 
-  $: isLoginPage = $page.url.pathname === '/login';
+  $: hideTopnav = $page.url.pathname === '/login' || $page.url.pathname === '/setup';
   $: if (topnavResizeObserver && topnavEl !== observedTopnavEl) {
     if (observedTopnavEl) {
       topnavResizeObserver.unobserve(observedTopnavEl);
@@ -74,7 +74,7 @@
   }
 </script>
 
-{#if !isLoginPage}
+{#if !hideTopnav}
   <nav class="topnav" bind:this={topnavEl}>
     <div class="nav-brand">Archive Metz</div>
     <a href="/depot" class:selected={$page.url.pathname.startsWith("/depot")}>

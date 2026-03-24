@@ -12,6 +12,13 @@
     goto("/depot");
   }
 
+  interface AppConfig {
+    depot_path: string;
+    validation_path: string;
+    archive_path: string;
+    settings_path: string;
+  }
+
   async function loginAsAdmin() {
     if (!password.trim()) {
       error = "Veuillez entrer le mot de passe administrateur.";
@@ -25,7 +32,20 @@
       const valid = await invoke<boolean>("verify_admin_password", { password });
       if (valid) {
         authStore.login("admin");
-        goto("/depot");
+        
+        // Vérification si premier lancement (chemins manquants)
+        try {
+          const config = await invoke<AppConfig>("get_app_config");
+          const needsSetup = !config.depot_path || !config.validation_path || !config.archive_path || !config.settings_path;
+          if (needsSetup) {
+            goto("/setup");
+          } else {
+            goto("/depot");
+          }
+        } catch (e) {
+          console.error("Erreur vérification config :", e);
+          goto("/depot"); // Fallback
+        }
       } else {
         error = "Mot de passe incorrect.";
       }

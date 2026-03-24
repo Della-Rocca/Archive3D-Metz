@@ -81,6 +81,21 @@
     touched = touched;
   }
 
+  // --- Validation des chemins de fichiers (caractères interdits Windows) ---
+  // Caractères interdits dans les noms de fichiers/dossiers Windows
+  const WINDOWS_FORBIDDEN = /["\|\?\*<>]/;
+
+  function findInvalidFiles(paths: string[]): string[] {
+    return paths.filter((p) => WINDOWS_FORBIDDEN.test(p));
+  }
+
+  function invalidFileMessage(paths: string[]): string {
+    const invalid = findInvalidFiles(paths);
+    if (invalid.length === 0) return "";
+    const names = invalid.map((p) => p.split(/[\\/]/).pop() ?? p).join(", ");
+    return `Chemin invalide (caractères interdits " | ? * < >) : ${names}`;
+  }
+
   // Erreurs par champ
   $: fieldErrors = {
     "operation.code":
@@ -98,13 +113,23 @@
     modelFiles:
       touched["modelFiles"] && modelFiles.length === 0
         ? "Au moins un modèle 3D requis"
-        : "",
+        : invalidFileMessage(modelFiles),
+    orthoFiles: invalidFileMessage(orthoFiles),
+    photoFiles: invalidFileMessage(photoFiles),
+    workFiles: invalidFileMessage(workFiles),
   };
+
+  // Les fichiers sont valides si aucun chemin ne contient de caractères interdits
+  $: filesValid =
+    findInvalidFiles(modelFiles).length === 0 &&
+    findInvalidFiles(orthoFiles).length === 0 &&
+    findInvalidFiles(photoFiles).length === 0 &&
+    findInvalidFiles(workFiles).length === 0;
 
   // Validation par étape
   $: step1Valid = !!operation.code.trim() && !!operation.site.trim();
   $: step2Valid = !!structure.id.trim() && !!structure.st_type.trim();
-  $: step3Valid = modelFiles.length > 0;
+  $: step3Valid = modelFiles.length > 0 && filesValid;
   $: allValid = step1Valid && step2Valid && step3Valid;
 
   function goToStep(step: number) {
@@ -633,6 +658,8 @@
         bind:operation={operation}
         {presets}
         errors={fieldErrors}
+        canAdmin={canEditMetadata}
+        on:operationCreated={async () => { await loadPresets(); }}
       />
     {/if}
 
@@ -665,6 +692,12 @@
               {fieldErrors["modelFiles"]}
             </div>
           {/if}
+          {#if !filesValid}
+            <div class="status-message error" style="margin-bottom: var(--spacing-lg)">
+              Un ou plusieurs fichiers contiennent des caracteres interdits dans leur chemin
+              (<code>" | ? * &lt; &gt;</code>). Renommez les dossiers sources concernes avant de continuer.
+            </div>
+          {/if}
           <div class="file-cards">
             <!-- Modèles 3D -->
             <FileDropZone
@@ -684,6 +717,7 @@
               files={orthoFiles}
               dropId="ortho"
               {dragOver}
+              error={fieldErrors["orthoFiles"]}
               on:add={addOrthoFiles}
               on:remove={(e) => removeFile("ortho", e.detail)}
             />
@@ -694,6 +728,7 @@
               files={photoFiles}
               dropId="photo"
               {dragOver}
+              error={fieldErrors["photoFiles"]}
               on:add={addPhotoFiles}
               on:remove={(e) => removeFile("photo", e.detail)}
             />
@@ -704,6 +739,7 @@
               files={workFiles}
               dropId="work"
               {dragOver}
+              error={fieldErrors["workFiles"]}
               on:add={addWorkFiles}
               on:remove={(e) => removeFile("work", e.detail)}
             />

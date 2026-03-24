@@ -396,7 +396,7 @@ fn canonicalize_structure_in_known_roots(
 /// --------------------
 
 fn metadata_presets_path(config: &AppConfig) -> PathBuf {
-    PathBuf::from(&config.presets_path)
+    config.presets_file()
 }
 
 fn default_software_list() -> Vec<String> {
@@ -600,7 +600,7 @@ fn move_structure_between_spaces(
 }
 
 fn revision_tags_file(config: &AppConfig) -> PathBuf {
-    PathBuf::from(&config.revision_tags_path)
+    config.revision_tags_file_path()
 }
 
 fn read_revision_tags(config: &AppConfig) -> Result<std::collections::HashMap<String, RevisionTag>, String> {

@@ -40,7 +40,7 @@ L'application n'étant pas signée, un message d'avertissement vous indiquera qu
 
 ```bash
 npm install
-npm run dev
+npm run tauri dev
 ```
 ---
 

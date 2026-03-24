@@ -5,6 +5,10 @@ export async function getMetadataPresets(): Promise<Presets> {
     return invoke<Presets>("get_metadata_presets");
 }
 
+export async function updateMetadataPresets(presets: Presets): Promise<void> {
+    return invoke<void>("update_metadata_presets", { presets });
+}
+
 export async function countModelPolygons(path: string): Promise<number> {
     return invoke<number>("count_model_polygons", { path });
 }

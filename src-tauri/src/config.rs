@@ -10,9 +10,8 @@ pub struct AppConfig {
     pub depot_path: String,
     pub validation_path: String,
     pub archive_path: String,
-    pub presets_path: String,
-    pub logs_path: String,
-    pub revision_tags_path: String,
+    /// Dossier Paramètres : contient metadata-presets.json, audit.log, revision-tags.json
+    pub settings_path: String,
     pub admin_password: String,
 }
 
@@ -22,15 +21,28 @@ impl Default for AppConfig {
             depot_path: "".to_string(),
             validation_path: "".to_string(),
             archive_path: "".to_string(),
-            presets_path: "".to_string(),
-            logs_path: "".to_string(),
-            revision_tags_path: "".to_string(),
-            admin_password: "1".to_string(), // Mot de passe par défaut
+            settings_path: "".to_string(),
+            admin_password: "1".to_string(),
         }
     }
 }
 
 impl AppConfig {
+    /// Chemin vers metadata-presets.json dans le dossier Paramètres
+    pub fn presets_file(&self) -> PathBuf {
+        PathBuf::from(&self.settings_path).join("metadata-presets.json")
+    }
+
+    /// Chemin vers audit.log dans le dossier Paramètres
+    pub fn logs_file(&self) -> PathBuf {
+        PathBuf::from(&self.settings_path).join("audit.log")
+    }
+
+    /// Chemin vers revision-tags.json dans le dossier Paramètres
+    pub fn revision_tags_file_path(&self) -> PathBuf {
+        PathBuf::from(&self.settings_path).join("revision-tags.json")
+    }
+
     /// Charge la configuration depuis Tauri Store
     pub fn load_from_store(app_handle: &AppHandle) -> Result<Self, String> {
         let defaults = AppConfig::default();
@@ -38,7 +50,6 @@ impl AppConfig {
             .store("settings.json")
             .map_err(|e| format!("Erreur chargement store: {}", e))?;
 
-        // Charger les chemins depuis le store
         let depot_path = store
             .get("depot_path")
             .and_then(|v| v.as_str().map(|s| s.to_string()))
@@ -54,18 +65,8 @@ impl AppConfig {
             .and_then(|v| v.as_str().map(|s| s.to_string()))
             .unwrap_or_default();
 
-        let presets_path = store
-            .get("presets_path")
-            .and_then(|v| v.as_str().map(|s| s.to_string()))
-            .unwrap_or_default();
-
-        let logs_path = store
-            .get("logs_path")
-            .and_then(|v| v.as_str().map(|s| s.to_string()))
-            .unwrap_or_default();
-
-        let revision_tags_path = store
-            .get("revision_tags_path")
+        let settings_path = store
+            .get("settings_path")
             .and_then(|v| v.as_str().map(|s| s.to_string()))
             .unwrap_or_default();
 
@@ -90,20 +91,10 @@ impl AppConfig {
             } else {
                 archive_path
             },
-            presets_path: if presets_path.trim().is_empty() {
-                defaults.presets_path
+            settings_path: if settings_path.trim().is_empty() {
+                defaults.settings_path
             } else {
-                presets_path
-            },
-            logs_path: if logs_path.trim().is_empty() {
-                defaults.logs_path
-            } else {
-                logs_path
-            },
-            revision_tags_path: if revision_tags_path.trim().is_empty() {
-                defaults.revision_tags_path
-            } else {
-                revision_tags_path
+                settings_path
             },
             admin_password: if admin_password.trim().is_empty() {
                 defaults.admin_password
@@ -119,13 +110,10 @@ impl AppConfig {
             .store("settings.json")
             .map_err(|e| format!("Erreur chargement store: {}", e))?;
 
-        // L'API store.set() ne retourne pas de Result, donc on ne peut pas utiliser map_err
         store.set("depot_path", serde_json::json!(&self.depot_path));
         store.set("validation_path", serde_json::json!(&self.validation_path));
         store.set("archive_path", serde_json::json!(&self.archive_path));
-        store.set("presets_path", serde_json::json!(&self.presets_path));
-        store.set("logs_path", serde_json::json!(&self.logs_path));
-        store.set("revision_tags_path", serde_json::json!(&self.revision_tags_path));
+        store.set("settings_path", serde_json::json!(&self.settings_path));
         store.set("admin_password", serde_json::json!(&self.admin_password));
 
         store
@@ -179,71 +167,22 @@ impl AppConfig {
             result.valid = false;
         }
 
-        // Vérifier presets_path (fichier, pas dossier)
-        if self.presets_path.is_empty() {
+        // Vérifier settings_path (dossier Paramètres)
+        if self.settings_path.is_empty() {
             result
                 .warnings
-                .push("Chemin metadata-presets.json non configuré".to_string());
+                .push("Dossier Paramètres non configuré".to_string());
         } else {
-            let presets_file = PathBuf::from(&self.presets_path);
-            if !presets_file.exists() {
+            let settings_dir = PathBuf::from(&self.settings_path);
+            if !settings_dir.exists() {
                 result.warnings.push(format!(
-                    "Fichier metadata-presets.json introuvable (sera créé): {}",
-                    self.presets_path
+                    "Dossier Paramètres introuvable, sera créé automatiquement: {}",
+                    self.settings_path
                 ));
-            } else if !presets_file.is_file() {
+            } else if !settings_dir.is_dir() {
                 result.errors.push(format!(
-                    "Le chemin presets n'est pas un fichier: {}",
-                    self.presets_path
-                ));
-                result.valid = false;
-            } else if let Ok(content) = std::fs::read_to_string(&presets_file) {
-                if serde_json::from_str::<serde_json::Value>(&content).is_err() {
-                    result.warnings.push(format!(
-                        "Le fichier metadata-presets.json est invalide et sera régénéré avec backup: {}",
-                        self.presets_path
-                    ));
-                }
-            }
-        }
-
-        // Vérifier logs_path (chemin direct vers le fichier audit.log)
-        if self.logs_path.is_empty() {
-            result
-                .warnings
-                .push("Fichier audit.log non configuré".to_string());
-        } else {
-            let audit_file = PathBuf::from(&self.logs_path);
-            if !audit_file.exists() {
-                result.warnings.push(format!(
-                    "Fichier audit.log introuvable, sera créé automatiquement: {}",
-                    self.logs_path
-                ));
-            } else if !audit_file.is_file() {
-                result.errors.push(format!(
-                    "Le chemin logs n'est pas un fichier: {}",
-                    self.logs_path
-                ));
-                result.valid = false;
-            }
-        }
-
-        // Vérifier revision_tags_path (chemin direct vers le fichier revision-tags.json)
-        if self.revision_tags_path.is_empty() {
-            result
-                .warnings
-                .push("Fichier revision-tags.json non configuré".to_string());
-        } else {
-            let tags_file = PathBuf::from(&self.revision_tags_path);
-            if !tags_file.exists() {
-                result.warnings.push(format!(
-                    "Fichier revision-tags.json introuvable (sera créé): {}",
-                    self.revision_tags_path
-                ));
-            } else if !tags_file.is_file() {
-                result.errors.push(format!(
-                    "Le chemin revision_tags n'est pas un fichier: {}",
-                    self.revision_tags_path
+                    "Le chemin Paramètres n'est pas un dossier: {}",
+                    self.settings_path
                 ));
                 result.valid = false;
             }
@@ -292,10 +231,8 @@ pub fn update_app_config(
     config_state: tauri::State<AppConfigState>,
     new_config: AppConfig,
 ) -> Result<(), String> {
-    // Sauvegarder dans le store
     new_config.save_to_store(&app_handle)?;
 
-    // Mettre à jour l'état en mémoire
     let mut config = config_state
         .lock()
         .map_err(|e| format!("Erreur accès config: {}", e))?;
@@ -321,71 +258,58 @@ pub fn preview_validate_config_paths(new_config: AppConfig) -> Result<PathValida
     Ok(new_config.validate_paths())
 }
 
-/// Crée automatiquement les fichiers par défaut (metadata-presets.json et audit.log)
-/// si les chemins sont configurés mais les fichiers absents.
+/// Crée automatiquement le dossier Paramètres et les 3 fichiers qu'il contient
+/// (metadata-presets.json, audit.log, revision-tags.json) s'ils sont absents.
 #[tauri::command]
 pub fn ensure_default_files(config_state: tauri::State<AppConfigState>) -> Result<(), String> {
     let config = config_state
         .lock()
         .map_err(|e| format!("Erreur accès config: {}", e))?;
 
-    // Auto-créer metadata-presets.json si configuré et absent
-    if !config.presets_path.is_empty() {
-        let presets_file = PathBuf::from(&config.presets_path);
-        if !presets_file.exists() {
-            if let Some(parent) = presets_file.parent() {
-                if !parent.exists() {
-                    std::fs::create_dir_all(parent)
-                        .map_err(|e| format!("Erreur création dossier presets: {}", e))?;
-                }
-            }
-            let default_presets = serde_json::json!({
-                "operations": [],
-                "structure_types": [],
-                "operation_types": [],
-                "software_types": [],
-                "sites": [],
-                "responsables": [],
-                "model_authors": [],
-                "depositors": []
-            });
-            std::fs::write(
-                &presets_file,
-                serde_json::to_string_pretty(&default_presets)
-                    .map_err(|e| format!("Erreur sérialisation presets: {}", e))?,
-            )
-            .map_err(|e| format!("Erreur création metadata-presets.json: {}", e))?;
-        }
+    if config.settings_path.is_empty() {
+        return Ok(());
     }
 
-    // Auto-créer audit.log si configuré et absent
-    if !config.logs_path.is_empty() {
-        let audit_file = PathBuf::from(&config.logs_path);
-        if !audit_file.exists() {
-            if let Some(parent) = audit_file.parent() {
-                if !parent.exists() {
-                    std::fs::create_dir_all(parent)
-                        .map_err(|e| format!("Erreur création dossier logs: {}", e))?;
-                }
-            }
-            std::fs::write(&audit_file, "")
-                .map_err(|e| format!("Erreur création audit.log: {}", e))?;
-        }
+    // Créer le dossier Paramètres s'il n'existe pas
+    let settings_dir = PathBuf::from(&config.settings_path);
+    if !settings_dir.exists() {
+        std::fs::create_dir_all(&settings_dir)
+            .map_err(|e| format!("Erreur création dossier Paramètres: {}", e))?;
     }
 
-    // Auto-créer revision-tags.json si configuré et absent
-    if !config.revision_tags_path.is_empty() {
-        let tags_file = PathBuf::from(&config.revision_tags_path);
-        if !tags_file.exists() {
-            if let Some(parent) = tags_file.parent() {
-                if !parent.exists() {
-                    std::fs::create_dir_all(parent)
-                        .map_err(|e| format!("Erreur création dossier revision-tags: {}", e))?;
-                }
-            }
-            std::fs::write(&tags_file, "{}")
-                .map_err(|e| format!("Erreur création revision-tags.json: {}", e))?;
-        }
+    // Auto-créer metadata-presets.json si absent
+    let presets_file = config.presets_file();
+    if !presets_file.exists() {
+        let default_presets = serde_json::json!({
+            "operations": [],
+            "structure_types": [],
+            "operation_types": [],
+            "software_types": [],
+            "sites": [],
+            "responsables": [],
+            "model_authors": [],
+            "depositors": []
+        });
+        std::fs::write(
+            &presets_file,
+            serde_json::to_string_pretty(&default_presets)
+                .map_err(|e| format!("Erreur sérialisation presets: {}", e))?,
+        )
+        .map_err(|e| format!("Erreur création metadata-presets.json: {}", e))?;
+    }
+
+    // Auto-créer audit.log si absent
+    let audit_file = config.logs_file();
+    if !audit_file.exists() {
+        std::fs::write(&audit_file, "")
+            .map_err(|e| format!("Erreur création audit.log: {}", e))?;
+    }
+
+    // Auto-créer revision-tags.json si absent
+    let tags_file = config.revision_tags_file_path();
+    if !tags_file.exists() {
+        std::fs::write(&tags_file, "{}")
+            .map_err(|e| format!("Erreur création revision-tags.json: {}", e))?;
     }
 
     Ok(())

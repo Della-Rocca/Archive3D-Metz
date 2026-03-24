@@ -2,17 +2,22 @@ use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+// dunce::canonicalize returns normal paths on Windows (e.g. C:\...) instead of
+// the UNC-prefixed form (\\?\C:\...) that std::fs::canonicalize returns.
+// This is required so that paths sent to the frontend via Tauri's asset protocol work correctly.
+use dunce::canonicalize as fs_canonicalize;
+
 pub fn ensure_dir(path: &Path) -> Result<(), String> {
     fs::create_dir_all(path).map_err(|e| format!("Erreur création dossier {:?}: {}", path, e))
 }
 
 pub fn ensure_and_canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
     ensure_dir(path)?;
-    fs::canonicalize(path).map_err(|e| format!("Erreur canonicalisation dossier {:?}: {}", path, e))
+    fs_canonicalize(path).map_err(|e| format!("Erreur canonicalisation dossier {:?}: {}", path, e))
 }
 
 pub fn canonicalize_existing_path(path: &Path) -> Result<PathBuf, String> {
-    fs::canonicalize(path).map_err(|e| format!("Erreur canonicalisation chemin {:?}: {}", path, e))
+    fs_canonicalize(path).map_err(|e| format!("Erreur canonicalisation chemin {:?}: {}", path, e))
 }
 
 pub fn safe_segment(input: &str, field_name: &str) -> Result<String, String> {

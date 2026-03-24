@@ -7,9 +7,7 @@
     depot_path: string;
     validation_path: string;
     archive_path: string;
-    presets_path: string;
-    logs_path: string;
-    revision_tags_path: string;
+    settings_path: string;
     admin_password: string;
   }
 
@@ -23,21 +21,16 @@
     depot_path: "",
     validation_path: "",
     archive_path: "",
-    presets_path: "",
-    logs_path: "",
-    revision_tags_path: "",
+    settings_path: "",
     admin_password: "",
   };
 
-  type PathField = "depot_path" | "validation_path" | "archive_path" | "presets_path" | "logs_path" | "revision_tags_path";
+  type PathField = "depot_path" | "validation_path" | "archive_path" | "settings_path";
   type PathFieldMeta = {
     field: PathField;
     label: string;
     hint: string;
   };
-
-  // Champs qui utilisent un sélecteur de fichier (et non de dossier)
-  const filePickerFields: PathField[] = ["presets_path", "logs_path", "revision_tags_path"];
 
   const pathFieldMeta: PathFieldMeta[] = [
     {
@@ -56,19 +49,9 @@
       hint: "Stockage définitif des structures archivées.",
     },
     {
-      field: "presets_path",
-      label: "Fichier metadata-presets.json",
-      hint: "Référentiel des listes de métadonnées. Créé automatiquement avec des listes vides si le fichier est absent.",
-    },
-    {
-      field: "logs_path",
-      label: "Fichier audit.log",
-      hint: "Journal de traçabilité. Créé automatiquement à la première action si le fichier est absent.",
-    },
-    {
-      field: "revision_tags_path",
-      label: "Fichier revision-tags.json",
-      hint: "Marques de révision pour les structures. Créé automatiquement avec un objet vide si le fichier est absent.",
+      field: "settings_path",
+      label: "Dossier Paramètres",
+      hint: "Contient metadata-presets.json, audit.log et revision-tags.json. Le dossier et les fichiers sont créés automatiquement à la sauvegarde.",
     },
   ];
 
@@ -85,18 +68,14 @@
     depot_path: { errors: [], warnings: [] },
     validation_path: { errors: [], warnings: [] },
     archive_path: { errors: [], warnings: [] },
-    presets_path: { errors: [], warnings: [] },
-    logs_path: { errors: [], warnings: [] },
-    revision_tags_path: { errors: [], warnings: [] },
+    settings_path: { errors: [], warnings: [] },
   });
 
   const fieldMessageMatchers: Record<PathField, string[]> = {
     depot_path: ["dépôt", "depot"],
     validation_path: ["validation"],
     archive_path: ["archive"],
-    presets_path: ["metadata-presets", "presets"],
-    logs_path: ["logs", "audit"],
-    revision_tags_path: ["revision-tags", "revision_tags"],
+    settings_path: ["paramètres", "parametres", "settings"],
   };
 
   function mapMessageToField(message: string): PathField | null {
@@ -193,19 +172,7 @@
   async function pickPath(field: PathField) {
     const fieldMeta = pathFieldMeta.find((entry) => entry.field === field);
     const title = fieldMeta ? `Sélectionner: ${fieldMeta.label}` : "Sélectionner";
-    const isFile = filePickerFields.includes(field);
-    let result: string | string[] | null;
-    if (isFile) {
-      let filters;
-      if (field === "presets_path" || field === "revision_tags_path") {
-        filters = [{ name: "JSON", extensions: ["json"] }];
-      } else {
-        filters = [{ name: "Log", extensions: ["log"] }];
-      }
-      result = await open({ directory: false, multiple: false, title, filters });
-    } else {
-      result = await open({ directory: true, title });
-    }
+    const result = await open({ directory: true, title });
     if (result) {
       config[field] = result as string;
     }

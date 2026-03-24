@@ -52,6 +52,7 @@ name = "archive-metz"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "dunce",
  "gltf",
  "serde",
  "serde_json",

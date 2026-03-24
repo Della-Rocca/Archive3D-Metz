@@ -1296,8 +1296,8 @@
                 <p>{selectedItem.operation_code} · {selectedItem.operation_site || "Site non renseigné"}</p>
                 <div class="detail-assets-summary" aria-label="Informations assets">
                   <div class="cell-badges">
-                    <span class="asset-badge asset-3d">3D {detailModelCount}</span>
-                    <span class="asset-badge asset-ortho">Ortho {detailOrthoCount}</span>
+                    <span class="asset-badge asset-3d">3D</span>
+                    <span class="asset-badge asset-ortho">Ortho</span>
                   </div>
                 </div>
               </div>
@@ -2019,7 +2019,7 @@
                 <th class="col-date">
                   <div class="th-head">
                     <button class="th-sort-btn th-sort-btn-with-arrow" type="button" on:click={() => toggleInventorySort("deposit_date")}>
-                      <span>Date</span>
+                      <span>Date dépôt</span>
                       <span class="th-sort-arrow" class:th-sort-arrow-active={isInventorySortActive("deposit_date")} class:th-sort-arrow-desc={isInventorySortDescending("deposit_date")} aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" width="12" height="12">
                           <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />

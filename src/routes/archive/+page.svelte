@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+  import { invoke } from "@tauri-apps/api/core";
   import { afterUpdate, onDestroy, onMount } from "svelte";
   import ArchiveMetadataPanel from "$lib/components/archive/ArchiveMetadataPanel.svelte";
   import Archive3DViewer from "$lib/components/archive/Archive3DViewer.svelte";
@@ -467,6 +467,28 @@
     return parts[parts.length - 1] || path;
   }
 
+  function preferredModelPath(paths: string[] | null | undefined): string | null {
+    if (!paths || paths.length === 0) return null;
+
+    const priority = ["glb", "gltf", "obj"];
+    const byExtension = new Map<string, string[]>();
+
+    for (const path of paths) {
+      const name = filename(path);
+      const dotIndex = name.lastIndexOf(".");
+      const extension = dotIndex >= 0 ? name.slice(dotIndex + 1).toLowerCase() : "";
+      if (!byExtension.has(extension)) byExtension.set(extension, []);
+      byExtension.get(extension)?.push(path);
+    }
+
+    for (const extension of priority) {
+      const match = byExtension.get(extension)?.[0];
+      if (match) return match;
+    }
+
+    return null;
+  }
+
   function clearSelectionDetails() {
     selectedItem = null;
     selectedDetails = null;
@@ -481,7 +503,7 @@
     showOrthoPreviewModal = false;
   }
 
-  function loadOrthoPreview(path: string, token: number) {
+  async function loadOrthoPreview(path: string, token: number) {
     orthoPreviewLoading = true;
     orthoPreviewError = null;
     orthoPreviewSrc = null;
@@ -489,7 +511,10 @@
 
     try {
       if (token !== detailRequestToken) return;
-      orthoPreviewSrc = convertFileSrc(path.replace(/\\/g, "/"));
+      orthoPreviewSrc = await invoke<string>("get_image_preview_data_url", {
+        imagePath: path,
+        maxDimension: 1600,
+      });
     } catch (error) {
       if (token !== detailRequestToken) return;
       orthoPreviewError = stringifyError(
@@ -523,7 +548,7 @@
 
       selectedDetails = details;
       if (details.orthos.length > 0) {
-        loadOrthoPreview(details.orthos[0], token);
+        await loadOrthoPreview(details.orthos[0], token);
       } else {
         orthoPreviewError = "Aucune orthophoto disponible sur cette structure.";
       }
@@ -894,7 +919,7 @@
   $: detailModelCount = selectedDetails?.models?.length ?? (selectedItem?.has_model ? 1 : 0);
   $: detailOrthoCount =
     selectedDetails?.orthos?.length ?? (selectedItem?.has_orthos ? 1 : 0);
-  $: detailPrimaryModelPath = selectedDetails?.models?.[0] ?? null;
+  $: detailPrimaryModelPath = preferredModelPath(selectedDetails?.models);
   $: detailNoVisualAssets = detailModelCount === 0 && detailOrthoCount === 0;
   $: operationEntries = stats ? sortedEntries(stats.by_operation) : [];
   $: structureEntries = stats ? sortedEntries(stats.by_structure_type) : [];

@@ -20,8 +20,8 @@ Permet de parcourir, visualiser et inventorier les structures archéologiques nu
 Télécharge le fichier correspondant à ton système depuis les [releases GitHub](../../releases) :
 
 
-- macOS | [Archive-Metz.dmg](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive_Metz.dmg)
-- Windows | [Archive-Metz.exe](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/Archive_Metz.exe)
+- macOS | [Archive-Metz.dmg](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/ArchiveMetz.dmg)
+- Windows | [Archive-Metz.exe](https://github.com/Della-Rocca/Archive3D-Metz/releases/download/dowload/ArchiveMetz.exe)
 
 L'application n'étant pas signée, un message d'avertissement vous indiquera que le fichier ne contient aucune signature valide et que l'identité de l'éditeur est inconnue. Cela est normal, l'application n'est pas signée, ce qui déclenche un processus de sécurité. Vous pouvez passer outre.
 

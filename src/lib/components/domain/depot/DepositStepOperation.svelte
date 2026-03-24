@@ -1,6 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     import type { OperationMeta, Presets } from "$lib/types/deposit";
+    import { getSafeSegmentError, isSafeSegment } from "$lib/utils/path";
 
     export let operation: OperationMeta;
     export let presets: Presets;
@@ -50,11 +51,11 @@
     $: quickFormValid =
         quickForm.code.trim().length > 0 &&
         quickForm.site.trim().length > 0 &&
-        !FORBIDDEN_QUICK.test(quickForm.code) &&
-        !FORBIDDEN_QUICK.test(quickForm.site);
+        isSafeSegment(quickForm.code) &&
+        isSafeSegment(quickForm.site);
 
-    // Mêmes caractères interdits que safe_segment Rust
-    const FORBIDDEN_QUICK = /[\/\\\0:\.\.]/;
+    $: quickCodeError = getSafeSegmentError(quickForm.code);
+    $: quickSiteError = getSafeSegmentError(quickForm.site);
 
     async function handleQuickCreate() {
         if (!quickFormValid) return;
@@ -133,7 +134,7 @@
                     <select
                         id="op-select"
                         class="meta-select"
-                        class:input-error={!!errors["operation.code"]}
+                        class:input-error={!!errors["operation.code"] || !!errors["operation.site"]}
                         on:change={handleOperationSelect}
                     >
                         <option value=""
@@ -149,10 +150,14 @@
                 {#if errors["operation.code"]}
                     <span class="field-error">{errors["operation.code"]}</span>
                 {/if}
+                {#if errors["operation.site"]}
+                    <span class="field-error">{errors["operation.site"]}</span>
+                {/if}
 
                 <div
                     class="op-summary"
                     class:op-summary-empty={!operation.code}
+                    class:op-summary-error={!!errors["operation.code"] || !!errors["operation.site"]}
                 >
                     <div class="op-summary-item">
                         <span class="op-summary-label">Code</span>
@@ -225,13 +230,13 @@
                                     <input
                                         id="qc-code"
                                         class="quick-input"
-                                        class:quick-input-error={quickForm.code.trim() && FORBIDDEN_QUICK.test(quickForm.code)}
+                                        class:quick-input-error={!!quickCodeError}
                                         bind:value={quickForm.code}
                                         placeholder="ex: 202501"
                                         disabled={quickSaving}
                                     />
-                                    {#if quickForm.code.trim() && FORBIDDEN_QUICK.test(quickForm.code)}
-                                        <span class="quick-field-error">Caractères interdits ( / \ : .. )</span>
+                                    {#if quickCodeError}
+                                        <span class="quick-field-error">{quickCodeError}</span>
                                     {/if}
                                 </div>
                                 <div class="quick-field">
@@ -239,13 +244,13 @@
                                     <input
                                         id="qc-site"
                                         class="quick-input"
-                                        class:quick-input-error={quickForm.site.trim() && FORBIDDEN_QUICK.test(quickForm.site)}
+                                        class:quick-input-error={!!quickSiteError}
                                         bind:value={quickForm.site}
                                         placeholder="ex: Metz_Centre"
                                         disabled={quickSaving}
                                     />
-                                    {#if quickForm.site.trim() && FORBIDDEN_QUICK.test(quickForm.site)}
-                                        <span class="quick-field-error">Caractères interdits ( / \ : .. )</span>
+                                    {#if quickSiteError}
+                                        <span class="quick-field-error">{quickSiteError}</span>
                                     {/if}
                                 </div>
                                 <div class="quick-field">
@@ -404,6 +409,10 @@
     .op-summary-empty {
         border-style: dashed;
         background: #fcfcfd;
+    }
+    .op-summary-error {
+        border-color: color-mix(in srgb, var(--color-error) 35%, transparent);
+        background: color-mix(in srgb, var(--color-error) 6%, #f7f9fc);
     }
     .op-summary-placeholder {
         color: var(--color-neutral-500);

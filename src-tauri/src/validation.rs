@@ -260,6 +260,10 @@ pub fn update_structure_metadata(
         return Err("Fichier metadata.json introuvable".to_string());
     }
 
+    crate::fs_safety::safe_segment(&updated_metadata.operation.code, "operation.code")?;
+    crate::fs_safety::safe_segment(&updated_metadata.operation.site, "operation.site")?;
+    crate::fs_safety::safe_segment(&updated_metadata.structure.id, "structure.id")?;
+
     // Sérialiser les nouvelles métadonnées
     let json = serde_json::to_string_pretty(&updated_metadata)
         .map_err(|e| format!("Erreur sérialisation metadata: {}", e))?;

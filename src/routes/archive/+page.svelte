@@ -489,7 +489,7 @@
 
     try {
       if (token !== detailRequestToken) return;
-      orthoPreviewSrc = convertFileSrc(path);
+      orthoPreviewSrc = convertFileSrc(path.replace(/\\/g, "/"));
     } catch (error) {
       if (token !== detailRequestToken) return;
       orthoPreviewError = stringifyError(

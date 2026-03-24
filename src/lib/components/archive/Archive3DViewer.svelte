@@ -7,7 +7,7 @@
   export let modelPath: string | null = null;
   export let noVisualAssets = false;
 
-  let viewerShellEl: HTMLDivElement | null = null;
+  let viewerShellEl: HTMLElement | null = null;
   let mountEl: HTMLDivElement | null = null;
   let renderer: THREE.WebGLRenderer | null = null;
   let camera: THREE.PerspectiveCamera | null = null;
@@ -24,7 +24,7 @@
 
   function toModelUrl(path: string): string {
     if (/^(https?:|tauri:|asset:|file:|blob:)/.test(path)) return path;
-    return convertFileSrc(path);
+    return convertFileSrc(path.replace(/\\/g, "/"));
   }
 
   function setStatus(next: typeof status, message: string) {
@@ -139,6 +139,14 @@
     await tick();
     updateRendererSize();
   }
+  
+  const onResize = () => updateRendererSize();
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && isExpanded) {
+      isExpanded = false;
+      updateRendererSize();
+    }
+  };
 
   onMount(async () => {
     mounted = true;
@@ -170,23 +178,11 @@
     (controls as any).minDistance = 0.1;
     (controls as any).maxDistance = 10000;
 
-    const onResize = () => updateRendererSize();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isExpanded) {
-        isExpanded = false;
-        updateRendererSize();
-      }
-    };
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
     updateRendererSize();
     frameId = requestAnimationFrame(animate);
     refreshFromProps();
-
-    return () => {
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("keydown", onKeyDown);
-    };
   });
 
   $: inputSignature = `${modelPath ?? ""}::${noVisualAssets ? "1" : "0"}`;
@@ -198,6 +194,8 @@
   onDestroy(() => {
     disposed = true;
     mounted = false;
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("keydown", onKeyDown);
     if (frameId) cancelAnimationFrame(frameId);
     clearCurrentModel();
     controls?.dispose();
@@ -243,7 +241,7 @@
     <div class="viewer-overlay" class:is-error={status === "error"}>
       <p>{statusMessage}</p>
       {#if status === "empty" && !noVisualAssets && (modelPath ?? "").trim().length > 0}
-        <button class="btn btn-secondary btn-sm overlay-load-btn" type="button" on:click={loadCurrentModel} disabled={status === "loading"}>
+        <button class="btn btn-secondary btn-sm overlay-load-btn" type="button" on:click={loadCurrentModel}>
           Charger le modèle 3D
         </button>
       {/if}

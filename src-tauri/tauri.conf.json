@@ -5,7 +5,7 @@
   "build": {
     "beforeDevCommand": "npm run dev:web",
     "beforeBuildCommand": "npm run build:web",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://127.0.0.1:1420",
     "frontendDist": "../build"
   },
   "app": {
@@ -25,7 +25,16 @@
       "assetProtocol": {
         "enable": true,
         "scope": [
-          "**"
+          "**",
+          "**/*",
+          "/**",
+          "C:/**",
+          "D:/**",
+          "E:/**",
+          "F:/**",
+          "G:/**",
+          "//*/**",
+          "//*/*/**"
         ]
       }
     }

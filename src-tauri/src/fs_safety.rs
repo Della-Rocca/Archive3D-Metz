@@ -26,11 +26,46 @@ pub fn safe_segment(input: &str, field_name: &str) -> Result<String, String> {
         return Err(format!("Le champ '{}' est vide", field_name));
     }
 
-    if trimmed.contains('\0')
+    let has_control_chars = trimmed.chars().any(|c| c.is_control());
+    let has_reserved_name = matches!(
+        trimmed.to_ascii_uppercase().as_str(),
+        "CON"
+            | "PRN"
+            | "AUX"
+            | "NUL"
+            | "COM1"
+            | "COM2"
+            | "COM3"
+            | "COM4"
+            | "COM5"
+            | "COM6"
+            | "COM7"
+            | "COM8"
+            | "COM9"
+            | "LPT1"
+            | "LPT2"
+            | "LPT3"
+            | "LPT4"
+            | "LPT5"
+            | "LPT6"
+            | "LPT7"
+            | "LPT8"
+            | "LPT9"
+    );
+
+    if has_control_chars
+        || trimmed.contains("..")
+        || trimmed.ends_with('.')
+        || trimmed.contains('<')
+        || trimmed.contains('>')
+        || trimmed.contains(':')
+        || trimmed.contains('"')
         || trimmed.contains('/')
         || trimmed.contains('\\')
-        || trimmed.contains("..")
-        || trimmed.contains(':')
+        || trimmed.contains('|')
+        || trimmed.contains('?')
+        || trimmed.contains('*')
+        || has_reserved_name
     {
         return Err(format!(
             "Le champ '{}' contient des caractères interdits",
@@ -129,6 +164,9 @@ mod tests {
         assert!(safe_segment("abc/def", "site").is_err());
         assert!(safe_segment("abc\\def", "site").is_err());
         assert!(safe_segment("C:drive", "site").is_err());
+        assert!(safe_segment("demo*", "site").is_err());
+        assert!(safe_segment("AUX", "site").is_err());
+        assert!(safe_segment("demo.", "site").is_err());
     }
 
     #[test]

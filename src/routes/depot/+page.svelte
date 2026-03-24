@@ -16,6 +16,7 @@
   import DepositStepStructure from "$lib/components/domain/depot/DepositStepStructure.svelte";
   import DepositStepRecap from "$lib/components/domain/depot/DepositStepRecap.svelte";
   import { filename } from "$lib/utils/file";
+  import { getSafeSegmentError, isSafeSegment } from "$lib/utils/path";
 
   // --- Types ---
   import type {
@@ -101,11 +102,15 @@
     "operation.code":
       touched["operation.code"] && !operation.code.trim()
         ? "Champ obligatoire"
-        : "",
+        : getSafeSegmentError(operation.code),
+    "operation.site":
+      touched["operation.site"] && !operation.site.trim()
+        ? "Champ obligatoire"
+        : getSafeSegmentError(operation.site),
     "structure.id":
       touched["structure.id"] && !structure.id.trim()
         ? "Champ obligatoire"
-        : "",
+        : getSafeSegmentError(structure.id),
     "structure.st_type":
       touched["structure.st_type"] && !structure.st_type.trim()
         ? "Champ obligatoire"
@@ -127,8 +132,15 @@
     findInvalidFiles(workFiles).length === 0;
 
   // Validation par étape
-  $: step1Valid = !!operation.code.trim() && !!operation.site.trim();
-  $: step2Valid = !!structure.id.trim() && !!structure.st_type.trim();
+  $: step1Valid =
+    !!operation.code.trim() &&
+    !!operation.site.trim() &&
+    isSafeSegment(operation.code) &&
+    isSafeSegment(operation.site);
+  $: step2Valid =
+    !!structure.id.trim() &&
+    !!structure.st_type.trim() &&
+    isSafeSegment(structure.id);
   $: step3Valid = modelFiles.length > 0 && filesValid;
   $: allValid = step1Valid && step2Valid && step3Valid;
 
@@ -154,6 +166,7 @@
     // Marquer les champs obligatoires de l'étape comme touched
     if (currentStep === 1) {
       touch("operation.code");
+      touch("operation.site");
     }
     if (currentStep === 2) {
       touch("structure.id");

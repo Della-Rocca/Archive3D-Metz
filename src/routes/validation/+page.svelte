@@ -3,6 +3,7 @@
   import { onMount, tick } from "svelte";
   import ComboInput from "$lib/components/ComboInput.svelte";
   import DepositCard from "$lib/components/DepositCard.svelte";
+  import { getSafeSegmentError, isSafeSegment } from "$lib/utils/path";
 
   import type { StructureListItem } from "$lib/types/fs";
   import type {
@@ -64,6 +65,32 @@
   $: if (editMetadata) {
     editMetadata.structure.software = selectedSoftware.join(", ");
   }
+
+  $: editFieldErrors = editMetadata
+    ? {
+        "operation.code": !editMetadata.operation.code.trim()
+          ? "Champ obligatoire"
+          : getSafeSegmentError(editMetadata.operation.code),
+        "operation.site": !editMetadata.operation.site.trim()
+          ? "Champ obligatoire"
+          : getSafeSegmentError(editMetadata.operation.site),
+        "structure.id": !editMetadata.structure.id.trim()
+          ? "Champ obligatoire"
+          : getSafeSegmentError(editMetadata.structure.id),
+      }
+    : {
+        "operation.code": "",
+        "operation.site": "",
+        "structure.id": "",
+      };
+
+  $: editMetadataValid = !!editMetadata &&
+    !!editMetadata.operation.code.trim() &&
+    !!editMetadata.operation.site.trim() &&
+    !!editMetadata.structure.id.trim() &&
+    isSafeSegment(editMetadata.operation.code) &&
+    isSafeSegment(editMetadata.operation.site) &&
+    isSafeSegment(editMetadata.structure.id);
 
   onMount(async () => {
     await loadItems();
@@ -237,6 +264,7 @@
 
   async function saveMetadata() {
     if (!selectedItem || !editMetadata) return;
+    if (!editMetadataValid) return;
     processing = true;
     try {
       await invoke("update_structure_metadata", {
@@ -590,15 +618,24 @@
                 <input
                   class="meta-input"
                   type="text"
+                  class:input-error={!!editFieldErrors["operation.code"]}
                   bind:value={editMetadata.operation.code}
                 />
+                {#if editFieldErrors["operation.code"]}
+                  <span class="field-error">{editFieldErrors["operation.code"]}</span>
+                {/if}
               </div>
               <div class="field-col">
                 <label class="meta-label">Site</label>
-                <ComboInput
-                  bind:value={editMetadata.operation.site}
-                  options={presets.sites}
-                />
+                <div class:combo-error={!!editFieldErrors["operation.site"]}>
+                  <ComboInput
+                    bind:value={editMetadata.operation.site}
+                    options={presets.sites}
+                  />
+                </div>
+                {#if editFieldErrors["operation.site"]}
+                  <span class="field-error">{editFieldErrors["operation.site"]}</span>
+                {/if}
               </div>
               <div class="field-col">
                 <label class="meta-label">Type d'opération</label>
@@ -621,8 +658,12 @@
                 <input
                   class="meta-input"
                   type="text"
+                  class:input-error={!!editFieldErrors["structure.id"]}
                   bind:value={editMetadata.structure.id}
                 />
+                {#if editFieldErrors["structure.id"]}
+                  <span class="field-error">{editFieldErrors["structure.id"]}</span>
+                {/if}
               </div>
               <div class="field-col">
                 <label class="meta-label">Type de structure</label>
@@ -855,7 +896,7 @@
             <button
               class="btn btn-primary modal-btn"
               on:click={saveMetadata}
-              disabled={processing}
+              disabled={processing || !editMetadataValid}
             >
               {processing ? "Enregistrement..." : "Enregistrer"}
             </button>
@@ -1607,6 +1648,19 @@
     flex-direction: column;
     gap: 6px;
     min-width: 0;
+  }
+
+  .input-error {
+    border-color: var(--color-error);
+  }
+
+  .combo-error :global(.combo-input) {
+    border-color: var(--color-error);
+  }
+
+  .field-error {
+    font-size: var(--font-size-xs);
+    color: var(--color-error);
   }
 
   .auto-calculated-input {

@@ -3,6 +3,7 @@
   import type { OperationMeta, Presets } from "$lib/types/deposit";
   import { createEventDispatcher } from "svelte";
   import ComboInput from "$lib/components/ComboInput.svelte";
+  import { getSafeSegmentError, isSafeSegment } from "$lib/utils/path";
 
   const dispatch = createEventDispatcher();
 
@@ -89,6 +90,11 @@
     responsable: "",
   };
 
+  $: newValueError =
+    activeCategory === "sites" ? getSafeSegmentError(newValue) : "";
+  $: newOpCodeError = getSafeSegmentError(newOp.code);
+  $: newOpSiteError = getSafeSegmentError(newOp.site);
+
   // --- Chargement ---
   async function loadPresets() {
     loading = true;
@@ -126,6 +132,11 @@
   function addStringValue() {
     const trimmed = newValue.trim();
     if (!trimmed) return;
+    if (activeCategory === "sites" && !isSafeSegment(trimmed)) {
+      status = newValueError;
+      statusType = "error";
+      return;
+    }
     if (presets[activeCategory].includes(trimmed)) {
       status = `"${trimmed}" existe déjà dans cette catégorie.`;
       statusType = "error";
@@ -157,6 +168,11 @@
     }
     if (!/^\d+$/.test(newOp.code.trim())) {
       status = "Le code d'opération doit contenir uniquement des chiffres.";
+      statusType = "error";
+      return;
+    }
+    if (!isSafeSegment(newOp.code.trim()) || !isSafeSegment(newOp.site.trim())) {
+      status = newOpCodeError || newOpSiteError;
       statusType = "error";
       return;
     }
@@ -351,6 +367,7 @@
           <div class="add-row">
             <input
               class="meta-input add-input"
+              class:input-error={!!newValueError}
               bind:value={newValue}
               placeholder={categories.find((c) => c.key === activeCategory)
                 ?.placeholder ?? "Nouvelle valeur..."}
@@ -359,11 +376,14 @@
             <button
               class="btn btn-primary add-btn"
               on:click={addStringValue}
-              disabled={!newValue.trim()}
+              disabled={!newValue.trim() || !!newValueError}
             >
               + Ajouter
             </button>
           </div>
+          {#if newValueError}
+            <p class="field-error">{newValueError}</p>
+          {/if}
 
           <!-- Liste des valeurs -->
           <div class="values-list">
@@ -417,6 +437,7 @@
               <label class="meta-label">Code *</label>
               <input
                 class="meta-input"
+                class:input-error={!!newOpCodeError}
                 bind:value={newOp.code}
                 placeholder="ex: 202501"
                 inputmode="numeric"
@@ -425,14 +446,22 @@
                   newOp.code = e.currentTarget.value.replace(/\D/g, "");
                 }}
               />
+              {#if newOpCodeError}
+                <p class="field-error">{newOpCodeError}</p>
+              {/if}
             </div>
             <div class="op-field">
               <label class="meta-label">Site *</label>
-              <ComboInput
-                bind:value={newOp.site}
-                options={presets.sites}
-                placeholder="Saisir ou sélectionner un site..."
-              />
+              <div class:combo-error={!!newOpSiteError}>
+                <ComboInput
+                  bind:value={newOp.site}
+                  options={presets.sites}
+                  placeholder="Saisir ou sélectionner un site..."
+                />
+              </div>
+              {#if newOpSiteError}
+                <p class="field-error">{newOpSiteError}</p>
+              {/if}
             </div>
             <div class="op-field">
               <label class="meta-label">Type d'opération *</label>
@@ -460,6 +489,8 @@
             class="btn btn-primary"
             on:click={addOperation}
             disabled={!newOp.code.trim() ||
+              !!newOpCodeError ||
+              !!newOpSiteError ||
               !newOp.site.trim() ||
               !newOp.op_type.trim() ||
               !newOp.responsable.trim()}
@@ -759,6 +790,13 @@
     display: flex;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-xl);
+  }
+
+  .field-error {
+    margin: calc(var(--spacing-sm) * -0.5) 0 var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--color-error);
+    font-weight: 500;
   }
 
   .add-input {

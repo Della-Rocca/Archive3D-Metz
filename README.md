@@ -8,10 +8,10 @@ Permet de parcourir, visualiser et inventorier les structures archéologiques nu
 
 ## Fonctionnalités
 
-- **Consultation** — recherche et navigation dans les structures archivées
-- **Visualisation 3D** — chargement et affichage des modèles `.glb` directement dans l'app
-- **Inventaire** — tableau complet des structures avec tri, filtrage et export CSV
-- **Statistiques** — aperçu global de l'archive (volumes, répartitions par opération, type, logiciel...)
+- **Consultation** : recherche et navigation dans les structures archivées
+- **Visualisation 3D** : chargement et affichage des modèles `.glb` directement dans l'app
+- **Inventaire** : tableau complet des structures avec tri, filtrage et export CSV
+- **Statistiques** : aperçu global de l'archive (volumes, répartitions par opération, type, logiciel...)
 
 ---
 

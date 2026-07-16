@@ -7,7 +7,7 @@
   import { open } from "@tauri-apps/plugin-dialog";
   import { getCurrentWebview } from "@tauri-apps/api/webview";
   import { onMount, onDestroy } from "svelte";
-  import { can } from "$lib/stores/auth";
+  import { can } from "$lib/stores/auth.svelte";
   import MetadataEditor from "$lib/components/MetadataEditor.svelte";
   import ComboInput from "$lib/components/ComboInput.svelte";
   import DepositStepper from "$lib/components/domain/depot/DepositStepper.svelte";
@@ -32,16 +32,16 @@
     { id: 3, label: "Fichiers", desc: "Modèles & données" },
     { id: 4, label: "Récapitulatif", desc: "Vérification" },
   ];
-  let currentStep = 1;
+  let currentStep = $state(1);
 
   // --- State ---
-  let operation: OperationMeta = {
+  let operation: OperationMeta = $state({
     code: "",
     site: "",
     op_type: "",
     responsable: "",
-  };
-  let structure: StructureMeta = {
+  });
+  let structure: StructureMeta = $state({
     id: "",
     st_type: "",
     description: "",
@@ -50,14 +50,14 @@
     photos_count: "",
     faces_count: "",
     software: "",
-  };
+  });
 
-  let modelFiles: string[] = [];
-  let orthoFiles: string[] = [];
-  let photoFiles: string[] = [];
-  let workFiles: string[] = [];
+  let modelFiles: string[] = $state([]);
+  let orthoFiles: string[] = $state([]);
+  let photoFiles: string[] = $state([]);
+  let workFiles: string[] = $state([]);
 
-  let presets: Presets = {
+  let presets: Presets = $state({
     operations: [],
     structure_types: [],
     operation_types: [],
@@ -66,20 +66,19 @@
     responsables: [],
     model_authors: [],
     depositors: [],
-  };
+  });
 
-  let status = "";
-  let statusType: "success" | "error" | "warning" | "" = "";
-  let loading = false;
-  let countingPolygons = false;
-  let showMetadataEditor = false;
+  let status = $state("");
+  let statusType: "success" | "error" | "warning" | "" = $state("");
+  let loading = $state(false);
+  let countingPolygons = $state(false);
+  let showMetadataEditor = $state(false);
 
   // --- Validation inline (touched fields) ---
-  let touched: Record<string, boolean> = {};
+  let touched: Record<string, boolean> = $state({});
 
   function touch(field: string) {
     touched[field] = true;
-    touched = touched;
   }
 
   // --- Validation des chemins de fichiers (caractères interdits Windows) ---
@@ -98,7 +97,7 @@
   }
 
   // Erreurs par champ
-  $: fieldErrors = {
+  let fieldErrors = $derived({
     "operation.code":
       touched["operation.code"] && !operation.code.trim()
         ? "Champ obligatoire"
@@ -122,27 +121,30 @@
     orthoFiles: invalidFileMessage(orthoFiles),
     photoFiles: invalidFileMessage(photoFiles),
     workFiles: invalidFileMessage(workFiles),
-  };
+  });
 
   // Les fichiers sont valides si aucun chemin ne contient de caractères interdits
-  $: filesValid =
+  let filesValid = $derived(
     findInvalidFiles(modelFiles).length === 0 &&
     findInvalidFiles(orthoFiles).length === 0 &&
     findInvalidFiles(photoFiles).length === 0 &&
-    findInvalidFiles(workFiles).length === 0;
+    findInvalidFiles(workFiles).length === 0
+  );
 
   // Validation par étape
-  $: step1Valid =
+  let step1Valid = $derived(
     !!operation.code.trim() &&
     !!operation.site.trim() &&
     isSafeSegment(operation.code) &&
-    isSafeSegment(operation.site);
-  $: step2Valid =
+    isSafeSegment(operation.site)
+  );
+  let step2Valid = $derived(
     !!structure.id.trim() &&
     !!structure.st_type.trim() &&
-    isSafeSegment(structure.id);
-  $: step3Valid = modelFiles.length > 0 && filesValid;
-  $: allValid = step1Valid && step2Valid && step3Valid;
+    isSafeSegment(structure.id)
+  );
+  let step3Valid = $derived(modelFiles.length > 0 && filesValid);
+  let allValid = $derived(step1Valid && step2Valid && step3Valid);
 
   function goToStep(step: number) {
     // On peut revenir en arrière librement, avancer seulement si étape courante valide
@@ -183,14 +185,15 @@
   }
 
   // Synchroniser le nombre de photos depuis les fichiers sélectionnés
-  $: structure.photos_count =
-    photoFiles.length > 0 ? photoFiles.length.toString() : "";
+  $effect(() => {
+    structure.photos_count =
+      photoFiles.length > 0 ? photoFiles.length.toString() : "";
+  });
 
 
 
   // Permission admin pour éditer les métadonnées
-  const canEditMetadataStore = can("canEditMetadata");
-  $: canEditMetadata = $canEditMetadataStore;
+  let canEditMetadata = $derived(can("canEditMetadata"));
 
   // --- Load presets ---
   async function loadPresets() {
@@ -231,8 +234,8 @@
   }
 
   // --- Duplicate detection ---
-  let duplicateWarning = "";
-  let dropError = "";
+  let duplicateWarning = $state("");
+  let dropError = $state("");
 
   const DROP_LABELS: Record<"model" | "ortho" | "photo" | "work", string> = {
     model: "Modèles 3D",
@@ -411,7 +414,7 @@
   }
 
   // --- Drag & Drop natif Tauri ---
-  let dragOver: string | null = null;
+  let dragOver: string | null = $state(null);
   let unlistenDragDrop: (() => void) | null = null;
   const DROP_IDS = ["model", "ortho", "photo", "work"] as const;
   type DropId = (typeof DROP_IDS)[number];
@@ -582,15 +585,14 @@
   }
 
   // --- Recap helpers ---
-  $: filesCounts = {
+  let filesCounts = $derived({
     model: modelFiles.length,
     ortho: orthoFiles.length,
     photo: photoFiles.length,
     work: workFiles.length,
-  };
+  });
 
-  let recapIssues: string[] = [];
-  $: {
+  let recapIssues = $derived.by(() => {
     const issues: string[] = [];
     if (!operation.op_type) issues.push("Type d'opération");
     if (!operation.responsable) issues.push("Responsable d'opération");
@@ -598,8 +600,8 @@
     if (!structure.depositor) issues.push("Déposant");
     if (!structure.software) issues.push("Logiciels utilisés");
     if (!structure.description) issues.push("Description");
-    recapIssues = issues;
-  }
+    return issues;
+  });
 </script>
 
 <main class="depot-page">

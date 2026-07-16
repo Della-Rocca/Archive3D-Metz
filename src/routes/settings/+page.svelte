@@ -17,13 +17,13 @@
     warnings: string[];
   }
 
-  let config: AppConfig = {
+  let config: AppConfig = $state({
     depot_path: "",
     validation_path: "",
     archive_path: "",
     settings_path: "",
     admin_password: "",
-  };
+  });
 
   type PathField = "depot_path" | "validation_path" | "archive_path" | "settings_path";
   type PathFieldMeta = {
@@ -55,14 +55,14 @@
     },
   ];
 
-  let pathValidation: PathValidationResult | null = null;
-  let saving = false;
-  let status = "";
-  let statusType: "success" | "error" | "" = "";
+  let pathValidation: PathValidationResult | null = $state(null);
+  let saving = $state(false);
+  let status = $state("");
+  let statusType: "success" | "error" | "" = $state("");
   // Snapshot de la config sauvegardée (pour afficher l'ancien chemin en cas de modification)
-  let savedConfig: AppConfig | null = null;
+  let savedConfig: AppConfig | null = $state(null);
   let validationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  let readyForLiveValidation = false;
+  let readyForLiveValidation = $state(false);
   type FieldIssues = Record<PathField, { errors: string[]; warnings: string[] }>;
   const emptyFieldIssues = (): FieldIssues => ({
     depot_path: { errors: [], warnings: [] },
@@ -105,9 +105,9 @@
     return issues;
   }
 
-  $: pathFieldIssues = computeFieldIssues(pathValidation);
-  $: globalValidationErrors = (pathValidation?.errors ?? []).filter((message) => !mapMessageToField(message));
-  $: globalValidationWarnings = (pathValidation?.warnings ?? []).filter((message) => !mapMessageToField(message));
+  let pathFieldIssues = $derived(computeFieldIssues(pathValidation));
+  let globalValidationErrors = $derived((pathValidation?.errors ?? []).filter((message) => !mapMessageToField(message)));
+  let globalValidationWarnings = $derived((pathValidation?.warnings ?? []).filter((message) => !mapMessageToField(message)));
 
   function isPathFieldValid(field: PathField): boolean {
     const hasValue = config[field].trim().length > 0;
@@ -116,16 +116,16 @@
     return pathFieldIssues[field].errors.length === 0;
   }
 
-  $: validationErrorCount = pathValidation?.errors.length ?? 0;
-  $: validationWarningCount = pathValidation?.warnings.length ?? 0;
-  $: validationIsHealthy = validationErrorCount === 0 && validationWarningCount === 0;
+  let validationErrorCount = $derived(pathValidation?.errors.length ?? 0);
+  let validationWarningCount = $derived(pathValidation?.warnings.length ?? 0);
+  let validationIsHealthy = $derived(validationErrorCount === 0 && validationWarningCount === 0);
   const totalPathCount = pathFieldMeta.length;
-  $: configuredPathCount = pathFieldMeta.reduce((count, entry) => {
+  let configuredPathCount = $derived(pathFieldMeta.reduce((count, entry) => {
     const field = entry.field;
     const hasValue = config[field].trim().length > 0;
     const hasNoErrors = pathFieldIssues[field].errors.length === 0;
     return count + (hasValue && hasNoErrors ? 1 : 0);
-  }, 0);
+  }, 0));
 
   onMount(async () => {
     try {
@@ -164,10 +164,12 @@
     }, 180);
   }
 
-  $: pathSignature = pathFieldMeta.map((entry) => config[entry.field]).join("|");
-  $: if (readyForLiveValidation && pathSignature !== undefined) {
-    scheduleLiveValidation();
-  }
+  let pathSignature = $derived(pathFieldMeta.map((entry) => config[entry.field]).join("|"));
+  $effect(() => {
+    if (readyForLiveValidation && pathSignature !== undefined) {
+      scheduleLiveValidation();
+    }
+  });
 
   async function pickPath(field: PathField) {
     const fieldMeta = pathFieldMeta.find((entry) => entry.field === field);

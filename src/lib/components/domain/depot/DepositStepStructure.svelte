@@ -1,44 +1,49 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
-    import ComboInput from "$lib/components/ComboInput.svelte";
-    import type { StructureMeta, Presets } from "$lib/types/deposit";
+  import { createEventDispatcher } from "svelte";
+  import ComboInput from "$lib/components/ComboInput.svelte";
+  import type { StructureMeta, Presets } from "$lib/types/deposit";
 
-    export let structure: StructureMeta;
-    export let presets: Presets;
-    export let errors: Record<string, string> = {};
-    export let countingPolygons = false;
-    // selectedSoftware peut être interne, on l'initialise depuis structure.software
-    let selectedSoftware: string[] = [];
+  let {
+    structure = $bindable<StructureMeta>({ id: "", st_type: "", description: "", model_author: "", depositor: "", photos_count: "", faces_count: "", software: "" }),
+    presets,
+    errors = {},
+    countingPolygons = false,
+  }: {
+    structure?: StructureMeta;
+    presets: Presets;
+    errors?: Record<string, string>;
+    countingPolygons?: boolean;
+  } = $props();
 
-    // Initialisation réactive : si structure.software change (ex: reset), on met à jour selectedSoftware
-    $: {
-        if (structure.software) {
-            const split = structure.software.split(", ").filter((s) => s);
-            // Si différent, on update (pour éviter boucle si update vient de toggle)
-            const current = selectedSoftware.join(", ");
-            if (current !== structure.software) {
-                selectedSoftware = split;
-            }
-        } else {
-            selectedSoftware = [];
-        }
+  let selectedSoftware: string[] = $state([]);
+
+  $effect(() => {
+    if (structure.software) {
+      const split = structure.software.split(", ").filter((s) => s);
+      const current = selectedSoftware.join(", ");
+      if (current !== structure.software) {
+        selectedSoftware = split;
+      }
+    } else {
+      selectedSoftware = [];
     }
+  });
 
-    const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher();
 
-    function handleTouch(field: string) {
-        dispatch("touch", field);
+  function handleTouch(field: string) {
+    dispatch("touch", field);
+  }
+
+  function toggleSoftware(sw: string) {
+    if (selectedSoftware.includes(sw)) {
+      selectedSoftware = selectedSoftware.filter((s) => s !== sw);
+    } else {
+      selectedSoftware = [...selectedSoftware, sw];
     }
-
-    function toggleSoftware(sw: string) {
-        if (selectedSoftware.includes(sw)) {
-            selectedSoftware = selectedSoftware.filter((s) => s !== sw);
-        } else {
-            selectedSoftware = [...selectedSoftware, sw];
-        }
-        structure.software = selectedSoftware.join(", ");
-        handleTouch("structure.software");
-    }
+    structure.software = selectedSoftware.join(", ");
+    handleTouch("structure.software");
+  }
 </script>
 
 <section class="form-section">

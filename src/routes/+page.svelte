@@ -1,16 +1,12 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { authStore } from "$lib/stores/auth";
+  import { auth } from "$lib/stores/auth.svelte";
 
-  onMount(() => {
-    const unsubscribe = authStore.subscribe(state => {
-      if (state.isAuthenticated) {
-        goto("/depot");
-      } else {
-        goto("/login");
-      }
-    });
-    return unsubscribe;
+  $effect(() => {
+    if (auth.isAuthenticated) {
+      goto("/depot");
+    } else {
+      goto("/login");
+    }
   });
 </script>

@@ -4,9 +4,15 @@
   import { onDestroy, onMount } from "svelte";
   import * as THREE from "three";
 
-  export let modelPath: string | null = null;
-  export let noVisualAssets = false;
+  let {
+    modelPath = null,
+    noVisualAssets = false,
+  }: {
+    modelPath?: string | null;
+    noVisualAssets?: boolean;
+  } = $props();
 
+  // DOM / Three.js refs — not displayed in template, plain let is fine
   let viewerShellEl: HTMLElement | null = null;
   let mountEl: HTMLDivElement | null = null;
   let renderer: THREE.WebGLRenderer | null = null;
@@ -16,11 +22,13 @@
   let rootModel: THREE.Object3D | null = null;
   let frameId = 0;
   let disposed = false;
-  let mounted = false;
-  let lastInputSignature = "";
-  let isExpanded = false;
-  let status: "idle" | "loading" | "error" | "empty" = "idle";
-  let statusMessage = "Sélectionnez une structure pour afficher son modèle 3D.";
+
+  // Reactive state (displayed in template or used in $effect)
+  let mounted = $state(false);
+  let lastInputSignature = $state("");
+  let isExpanded = $state(false);
+  let status: "idle" | "loading" | "error" | "empty" = $state("idle");
+  let statusMessage = $state("Sélectionnez une structure pour afficher son modèle 3D.");
 
   function fileExtension(path: string): string {
     const normalized = path.replace(/\\/g, "/");
@@ -210,11 +218,13 @@
     refreshFromProps();
   });
 
-  $: inputSignature = `${modelPath ?? ""}::${noVisualAssets ? "1" : "0"}`;
-  $: if (mounted && inputSignature !== lastInputSignature) {
-    lastInputSignature = inputSignature;
-    refreshFromProps();
-  }
+  let inputSignature = $derived(`${modelPath ?? ""}::${noVisualAssets ? "1" : "0"}`);
+  $effect(() => {
+    if (mounted && inputSignature !== lastInputSignature) {
+      lastInputSignature = inputSignature;
+      refreshFromProps();
+    }
+  });
 
   onDestroy(() => {
     disposed = true;

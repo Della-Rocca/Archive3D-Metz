@@ -2,23 +2,23 @@
     import { createEventDispatcher } from "svelte";
     import type { OperationMeta, StructureMeta } from "$lib/types/deposit";
 
-    export let operation: OperationMeta;
-    export let structure: StructureMeta;
-    export let filesCounts: {
-        model: number;
-        ortho: number;
-        photo: number;
-        work: number;
-    };
-    export let recapIssues: string[] = [];
+    let {
+        operation,
+        structure,
+        filesCounts,
+        recapIssues = [],
+    }: {
+        operation: OperationMeta;
+        structure: StructureMeta;
+        filesCounts: { model: number; ortho: number; photo: number; work: number };
+        recapIssues?: string[];
+    } = $props();
 
     const dispatch = createEventDispatcher();
 
-    $: totalFilesCount =
-        filesCounts.model +
-        filesCounts.ortho +
-        filesCounts.photo +
-        filesCounts.work;
+    let totalFilesCount = $derived(
+        filesCounts.model + filesCounts.ortho + filesCounts.photo + filesCounts.work
+    );
 
     function editStep(step: number) {
         dispatch("edit", step);

@@ -52,7 +52,7 @@
   let showArchiveConfirm = $state(false);
 
   let isEditing = $state(false);
-  let editMetadata: DepositMetadata | null = $state(null);
+  let editMetadata = $state<DepositMetadata | null>(null);
   let selectedSoftware: string[] = $state([]);
   let activeTab: "pending" | "history" = $state("pending");
   let historyEntries: AuditEntry[] = $state([]);
@@ -68,31 +68,38 @@
     }
   });
 
-  let editFieldErrors = $derived(editMetadata
-    ? {
-        "operation.code": !editMetadata.operation.code.trim()
-          ? "Champ obligatoire"
-          : getSafeSegmentError(editMetadata.operation.code),
-        "operation.site": !editMetadata.operation.site.trim()
-          ? "Champ obligatoire"
-          : getSafeSegmentError(editMetadata.operation.site),
-        "structure.id": !editMetadata.structure.id.trim()
-          ? "Champ obligatoire"
-          : getSafeSegmentError(editMetadata.structure.id),
-      }
-    : {
+  let editFieldErrors = $derived.by(() => {
+    if (!editMetadata) {
+      return {
         "operation.code": "",
         "operation.site": "",
         "structure.id": "",
-      });
+      };
+    }
+    return {
+      "operation.code": !editMetadata.operation.code.trim()
+        ? "Champ obligatoire"
+        : getSafeSegmentError(editMetadata.operation.code),
+      "operation.site": !editMetadata.operation.site.trim()
+        ? "Champ obligatoire"
+        : getSafeSegmentError(editMetadata.operation.site),
+      "structure.id": !editMetadata.structure.id.trim()
+        ? "Champ obligatoire"
+        : getSafeSegmentError(editMetadata.structure.id),
+    };
+  });
 
-  let editMetadataValid = $derived(!!editMetadata &&
-    !!editMetadata.operation.code.trim() &&
-    !!editMetadata.operation.site.trim() &&
-    !!editMetadata.structure.id.trim() &&
-    isSafeSegment(editMetadata.operation.code) &&
-    isSafeSegment(editMetadata.operation.site) &&
-    isSafeSegment(editMetadata.structure.id));
+  let editMetadataValid = $derived.by(() => {
+    if (!editMetadata) return false;
+    return (
+      !!editMetadata.operation.code.trim() &&
+      !!editMetadata.operation.site.trim() &&
+      !!editMetadata.structure.id.trim() &&
+      isSafeSegment(editMetadata.operation.code) &&
+      isSafeSegment(editMetadata.operation.site) &&
+      isSafeSegment(editMetadata.structure.id)
+    );
+  });
 
   onMount(async () => {
     await loadItems();

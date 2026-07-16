@@ -138,8 +138,8 @@
   let sortDirection: "asc" | "desc" = $state("asc");
 
   // --- Detail ---
-  let selectedItem: SummaryItem | null = $state(null);
-  let selectedDetails: StructureDetailsResponse | null = $state(null);
+  let selectedItem = $state<SummaryItem | null>(null);
+  let selectedDetails = $state<StructureDetailsResponse | null>(null);
   let detailLoading = $state(false);
   let detailError: string | null = $state(null);
   let detailActionStatus: string | null = $state(null);
@@ -151,7 +151,7 @@
   let showOrthoPreviewModal = $state(false);
 
   // --- Stats ---
-  let stats: ArchiveStatistics | null = $state(null);
+  let stats = $state<ArchiveStatistics | null>(null);
   let loadingStats = $state(false);
   let statsError: string | null = $state(null);
 

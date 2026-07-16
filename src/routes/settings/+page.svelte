@@ -55,7 +55,7 @@
     },
   ];
 
-  let pathValidation: PathValidationResult | null = $state(null);
+  let pathValidation = $state<PathValidationResult | null>(null);
   let saving = $state(false);
   let status = $state("");
   let statusType: "success" | "error" | "" = $state("");

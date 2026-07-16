@@ -75,7 +75,7 @@
   });
 
   let activeTab: "categories" | "operations" = $state("categories");
-  let activeCategory: StringCategory = $state("structure_types");
+  let activeCategory = $state<StringCategory>("structure_types");
   let newValue = $state("");
   let saving = $state(false);
   let loading = $state(true);

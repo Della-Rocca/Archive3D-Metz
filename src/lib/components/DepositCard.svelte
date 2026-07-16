@@ -1,16 +1,29 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  export let title = "";
-  export let operationCode = "—";
-  export let operationSite = "—";
-  export let structureType = "—";
-  export let hasModel = false;
-  export let hasPhotos = false;
-  export let hasOrtho = false;
-  export let hasWork = false;
-  export let active = false;
-  export let revisionTagged = false;
+  let {
+    title = "",
+    operationCode = "—",
+    operationSite = "—",
+    structureType = "—",
+    hasModel = false,
+    hasPhotos = false,
+    hasOrtho = false,
+    hasWork = false,
+    active = false,
+    revisionTagged = false,
+  }: {
+    title?: string;
+    operationCode?: string;
+    operationSite?: string;
+    structureType?: string;
+    hasModel?: boolean;
+    hasPhotos?: boolean;
+    hasOrtho?: boolean;
+    hasWork?: boolean;
+    active?: boolean;
+    revisionTagged?: boolean;
+  } = $props();
 
   const dispatch = createEventDispatcher();
 </script>

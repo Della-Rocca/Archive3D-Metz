@@ -1,14 +1,14 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { authStore } from "$lib/stores/auth";
+  import { auth } from "$lib/stores/auth.svelte";
   import { invoke } from "@tauri-apps/api/core";
 
-  let password = "";
-  let error = "";
-  let loading = false;
+  let password = $state("");
+  let error = $state("");
+  let loading = $state(false);
 
   async function loginAsGuest() {
-    authStore.login("guest");
+    auth.login("guest");
     goto("/depot");
   }
 
@@ -31,7 +31,7 @@
     try {
       const valid = await invoke<boolean>("verify_admin_password", { password });
       if (valid) {
-        authStore.login("admin");
+        auth.login("admin");
         
         // Vérification si premier lancement (chemins manquants)
         try {

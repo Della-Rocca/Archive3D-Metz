@@ -1,17 +1,10 @@
 <script lang="ts">
-  import { authStore } from "$lib/stores/auth";
+  import { auth } from "$lib/stores/auth.svelte";
 
-  $: isAdmin = $authStore.role === "admin";
+  type SectionId = "intro" | "depot" | "archive" | "validation" | "settings" | "metadata";
 
-  type SectionId =
-    | "intro"
-    | "depot"
-    | "archive"
-    | "validation"
-    | "settings"
-    | "metadata";
-
-  let activeSection: SectionId = "intro";
+  let activeSection: SectionId = $state("intro");
+  let isAdmin = $derived(auth.role === "admin");
 
   const guestSections: { id: SectionId; label: string; icon: string }[] = [
     { id: "intro", label: "Introduction", icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
@@ -25,9 +18,7 @@
     { id: "metadata", label: "Métadonnées", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
   ];
 
-  $: allSections = isAdmin
-    ? [...guestSections, ...adminSections]
-    : guestSections;
+  let allSections = $derived(isAdmin ? [...guestSections, ...adminSections] : guestSections);
 </script>
 
 <main class="tutorial-page">

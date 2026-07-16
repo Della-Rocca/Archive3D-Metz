@@ -23,10 +23,10 @@
   }
 
   // --- State ---
-  let items: StructureListItem[] = [];
-  let selectedItem: StructureListItem | null = null;
-  let metadata: DepositMetadata | null = null;
-  let presets: Presets = {
+  let items: StructureListItem[] = $state([]);
+  let selectedItem: StructureListItem | null = $state(null);
+  let metadata: DepositMetadata | null = $state(null);
+  let presets: Presets = $state({
     operations: [],
     structure_types: [],
     operation_types: [],
@@ -35,38 +35,40 @@
     responsables: [],
     model_authors: [],
     depositors: [],
-  };
+  });
 
-  let loading = false;
-  let processing = false;
-  let status = "";
-  let statusType: "success" | "error" | "warning" | "" = "";
+  let loading = $state(false);
+  let processing = $state(false);
+  let status = $state("");
+  let statusType: "success" | "error" | "warning" | "" = $state("");
 
-  let filterType = "";
-  let filterOperation = "";
-  let filterRevision: "all" | "tagged" | "untagged" = "all";
-  let searchQuery = "";
-  let listDetails: Record<string, StructureDetails | null> = {};
+  let filterType = $state("");
+  let filterOperation = $state("");
+  let filterRevision: "all" | "tagged" | "untagged" = $state("all");
+  let searchQuery = $state("");
+  let listDetails: Record<string, StructureDetails | null> = $state({});
 
-  let showPreviewModal = false;
-  let showArchiveConfirm = false;
+  let showPreviewModal = $state(false);
+  let showArchiveConfirm = $state(false);
 
-  let isEditing = false;
-  let editMetadata: DepositMetadata | null = null;
-  let selectedSoftware: string[] = [];
-  let activeTab: "pending" | "history" = "pending";
-  let historyEntries: AuditEntry[] = [];
-  let loadingHistory = false;
-  let resettingHistory = false;
-  let revisionTags: Record<string, { tagged: boolean; note: string; updated_at: string }> = {};
-  let showCompactDetails = false;
+  let isEditing = $state(false);
+  let editMetadata: DepositMetadata | null = $state(null);
+  let selectedSoftware: string[] = $state([]);
+  let activeTab: "pending" | "history" = $state("pending");
+  let historyEntries: AuditEntry[] = $state([]);
+  let loadingHistory = $state(false);
+  let resettingHistory = $state(false);
+  let revisionTags: Record<string, { tagged: boolean; note: string; updated_at: string }> = $state({});
+  let showCompactDetails = $state(false);
   let previewBodyEl: HTMLDivElement | null = null;
 
-  $: if (editMetadata) {
-    editMetadata.structure.software = selectedSoftware.join(", ");
-  }
+  $effect(() => {
+    if (editMetadata) {
+      editMetadata.structure.software = selectedSoftware.join(", ");
+    }
+  });
 
-  $: editFieldErrors = editMetadata
+  let editFieldErrors = $derived(editMetadata
     ? {
         "operation.code": !editMetadata.operation.code.trim()
           ? "Champ obligatoire"
@@ -82,15 +84,15 @@
         "operation.code": "",
         "operation.site": "",
         "structure.id": "",
-      };
+      });
 
-  $: editMetadataValid = !!editMetadata &&
+  let editMetadataValid = $derived(!!editMetadata &&
     !!editMetadata.operation.code.trim() &&
     !!editMetadata.operation.site.trim() &&
     !!editMetadata.structure.id.trim() &&
     isSafeSegment(editMetadata.operation.code) &&
     isSafeSegment(editMetadata.operation.site) &&
-    isSafeSegment(editMetadata.structure.id);
+    isSafeSegment(editMetadata.structure.id));
 
   onMount(async () => {
     await loadItems();
@@ -185,11 +187,11 @@
     listDetails = { ...listDetails, ...Object.fromEntries(entries) };
   }
 
-  $: operationOptions = Array.from(
+  let operationOptions = $derived(Array.from(
     new Set(items.map((i) => i.operation_folder)),
-  ).sort();
+  ).sort());
 
-  $: filteredItems = items.filter((item) => {
+  let filteredItems = $derived(items.filter((item) => {
     const opOk = !filterOperation || item.operation_folder === filterOperation;
     const meta = listDetails[item.path]?.metadata ?? null;
     const typeOk = !filterType || meta?.structure.st_type === filterType;
@@ -207,7 +209,7 @@
       (meta?.operation.site || "").toLowerCase().includes(q) ||
       (meta?.structure.st_type || "").toLowerCase().includes(q);
     return opOk && typeOk && revisionOk && searchOk;
-  });
+  }));
 
   async function selectItem(item: StructureListItem) {
     if (isEditing) cancelEdit();

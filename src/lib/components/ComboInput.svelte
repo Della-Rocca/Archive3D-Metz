@@ -40,6 +40,24 @@
     const related = e.relatedTarget as HTMLElement | null;
     if (related && containerEl?.contains(related)) return;
     open = false;
+    dispatch("change", value);
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      open = false;
+      inputEl?.blur();
+    }
+  }
+
+  function handleChevronClick() {
+    if (disabled) return;
+    if (open) {
+      open = false;
+    } else {
+      open = true;
+      inputEl?.focus();
+    }
   }
 </script>
 
@@ -53,12 +71,13 @@
         on:input={handleInput}
         on:click={handleClick}
         on:blur={handleBlur}
+        on:keydown={handleKeydown}
         autocomplete="off"
     />
     <button
         type="button"
         class="combo-toggle"
-        on:click={handleClick}
+        on:mousedown|preventDefault={handleChevronClick}
         {disabled}
         tabindex="-1"
         aria-label="Ouvrir la liste"

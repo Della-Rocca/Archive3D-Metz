@@ -4,9 +4,15 @@
     value: string;
   }
 
-  export let operationItems: MetadataDisplayItem[] = [];
-  export let structureItems: MetadataDisplayItem[] = [];
-  export let description = "—";
+  let {
+    operationItems = [],
+    structureItems = [],
+    description = "—",
+  }: {
+    operationItems?: MetadataDisplayItem[];
+    structureItems?: MetadataDisplayItem[];
+    description?: string;
+  } = $props();
 
   function isMissing(value: string): boolean {
     return value.trim() === "—";

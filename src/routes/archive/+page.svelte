@@ -1,7 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { replaceState } from "$app/navigation";
-  import { afterUpdate, onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import ArchiveMetadataPanel from "$lib/components/archive/ArchiveMetadataPanel.svelte";
   import Archive3DViewer from "$lib/components/archive/Archive3DViewer.svelte";
 
@@ -872,7 +872,7 @@
     inventoryTableContainerEl.scrollBy({ left: delta, behavior: "smooth" });
   }
 
-  afterUpdate(() => {
+  $effect(() => {
     if (activeTab !== "inventory") return;
     scheduleInventoryScrollStateUpdate();
   });
@@ -1038,13 +1038,14 @@
       inventoryPage = inventoryTotalPages;
     }
   });
+  let effectiveInventoryPage = $derived(Math.min(inventoryPage, Math.max(1, inventoryTotalPages)));
   let inventoryPageStart = $derived(
-    displayedInventory.length === 0 ? 0 : (inventoryPage - 1) * inventoryPerPage + 1,
+    displayedInventory.length === 0 ? 0 : (effectiveInventoryPage - 1) * inventoryPerPage + 1,
   );
-  let inventoryPageEnd = $derived(Math.min(inventoryPage * inventoryPerPage, displayedInventory.length));
+  let inventoryPageEnd = $derived(Math.min(effectiveInventoryPage * inventoryPerPage, displayedInventory.length));
   let paginatedInventory = $derived(displayedInventory.slice(
-    (inventoryPage - 1) * inventoryPerPage,
-    inventoryPage * inventoryPerPage,
+    (effectiveInventoryPage - 1) * inventoryPerPage,
+    effectiveInventoryPage * inventoryPerPage,
   ));
 </script>
 

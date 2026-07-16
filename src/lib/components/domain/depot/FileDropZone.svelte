@@ -2,16 +2,25 @@
     import { createEventDispatcher } from "svelte";
     import { filename } from "$lib/utils/file";
 
-    export let title: string;
-    export let required = false;
-    export let files: string[] = [];
-    export let dropId: string;
-    export let dragOver: string | null = null;
-    export let error = "";
+    let {
+        title,
+        required = false,
+        files = [],
+        dropId,
+        dragOver = null,
+        error = "",
+    }: {
+        title: string;
+        required?: boolean;
+        files?: string[];
+        dropId: string;
+        dragOver?: string | null;
+        error?: string;
+    } = $props();
 
     const dispatch = createEventDispatcher();
 
-    $: isActive = dragOver === dropId;
+    let isActive = $derived(dragOver === dropId);
 
     function handleRemove(index: number) {
         if (index >= 0 && index < files.length) {

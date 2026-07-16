@@ -1,11 +1,19 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
 
-    export let steps: { id: number; label: string; desc: string }[] = [];
-    export let currentStep = 1;
-    export let step1Valid = false;
-    export let step2Valid = false;
-    export let step3Valid = false;
+    let {
+        steps = [],
+        currentStep = 1,
+        step1Valid = false,
+        step2Valid = false,
+        step3Valid = false,
+    }: {
+        steps?: { id: number; label: string; desc: string }[];
+        currentStep?: number;
+        step1Valid?: boolean;
+        step2Valid?: boolean;
+        step3Valid?: boolean;
+    } = $props();
 
     const dispatch = createEventDispatcher();
 

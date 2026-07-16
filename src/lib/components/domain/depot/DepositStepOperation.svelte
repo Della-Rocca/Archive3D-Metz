@@ -3,14 +3,19 @@
     import type { OperationMeta, Presets } from "$lib/types/deposit";
     import { getSafeSegmentError, isSafeSegment } from "$lib/utils/path";
 
-    export let operation: OperationMeta;
-    export let presets: Presets;
-    export let errors: Record<string, string> = {};
-    export let canAdmin = false;
+    let {
+        operation = $bindable<OperationMeta>({ code: "", site: "", op_type: "", responsable: "" }),
+        presets,
+        errors = {},
+        canAdmin = false,
+    }: {
+        operation?: OperationMeta;
+        presets: Presets;
+        errors?: Record<string, string>;
+        canAdmin?: boolean;
+    } = $props();
 
-    const dispatch = createEventDispatcher<{
-        operationCreated: OperationMeta;
-    }>();
+    const dispatch = createEventDispatcher<{ operationCreated: OperationMeta }>();
 
     // --- Sélection depuis les presets ---
     function handleOperationSelect(e: Event) {
@@ -22,17 +27,17 @@
     }
 
     // --- Création rapide ---
-    let showQuickCreate = false;
-    let quickSaving = false;
-    let quickError = "";
-    let quickSuccess = false;
+    let showQuickCreate = $state(false);
+    let quickSaving = $state(false);
+    let quickError = $state("");
+    let quickSuccess = $state(false);
 
-    let quickForm: OperationMeta = {
+    let quickForm: OperationMeta = $state({
         code: "",
         site: "",
         op_type: "",
         responsable: "",
-    };
+    });
 
     function openQuickCreate() {
         quickForm = { code: "", site: "", op_type: "", responsable: "" };
@@ -48,14 +53,14 @@
     }
 
     // Validation locale du formulaire rapide
-    $: quickFormValid =
+    let quickFormValid = $derived(
         quickForm.code.trim().length > 0 &&
         quickForm.site.trim().length > 0 &&
         isSafeSegment(quickForm.code) &&
-        isSafeSegment(quickForm.site);
-
-    $: quickCodeError = getSafeSegmentError(quickForm.code);
-    $: quickSiteError = getSafeSegmentError(quickForm.site);
+        isSafeSegment(quickForm.site)
+    );
+    let quickCodeError = $derived(getSafeSegmentError(quickForm.code));
+    let quickSiteError = $derived(getSafeSegmentError(quickForm.site));
 
     async function handleQuickCreate() {
         if (!quickFormValid) return;

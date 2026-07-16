@@ -3,7 +3,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import { open } from "@tauri-apps/plugin-dialog";
   import { onMount } from "svelte";
-  import { authStore } from "$lib/stores/auth";
+  import { auth } from "$lib/stores/auth.svelte";
 
   interface AppConfig {
     depot_path: string;
@@ -13,16 +13,16 @@
     admin_password?: string;
   }
 
-  let config: AppConfig = {
+  let config: AppConfig = $state({
     depot_path: "",
     validation_path: "",
     archive_path: "",
     settings_path: "",
-  };
+  });
 
-  let step = 0;
-  let saving = false;
-  let error = "";
+  let step = $state(0);
+  let saving = $state(false);
+  let error = $state("");
 
   const stepsInfo = [
     {
@@ -55,12 +55,14 @@
     }
   ];
 
-  $: currentField = stepsInfo[step].field as "depot_path" | "validation_path" | "archive_path" | "settings_path" | undefined;
-  $: isCurrentFieldFilled = currentField ? !!config[currentField] : false;
+  let currentField = $derived(
+    stepsInfo[step].field as "depot_path" | "validation_path" | "archive_path" | "settings_path" | undefined
+  );
+  let isCurrentFieldFilled = $derived(currentField ? !!config[currentField] : false);
 
   onMount(async () => {
     // Vérification de sécurité
-    if ($authStore.role !== "admin") {
+    if (auth.role !== "admin") {
       goto("/login");
       return;
     }

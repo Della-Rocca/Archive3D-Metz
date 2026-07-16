@@ -63,7 +63,7 @@
   const operationTypeChoices = ["diagnostic", "fouille"];
 
   // --- State ---
-  let presets: Presets = {
+  let presets: Presets = $state({
     operations: [],
     structure_types: [],
     operation_types: [],
@@ -72,28 +72,29 @@
     responsables: [],
     model_authors: [],
     depositors: [],
-  };
+  });
 
-  let activeTab: "categories" | "operations" = "categories";
-  let activeCategory: StringCategory = "structure_types";
-  let newValue = "";
-  let saving = false;
-  let loading = true;
-  let status = "";
-  let statusType: "success" | "error" | "" = "";
+  let activeTab: "categories" | "operations" = $state("categories");
+  let activeCategory: StringCategory = $state("structure_types");
+  let newValue = $state("");
+  let saving = $state(false);
+  let loading = $state(true);
+  let status = $state("");
+  let statusType: "success" | "error" | "" = $state("");
 
   // Opérations : champs pour ajouter
-  let newOp: OperationMeta = {
+  let newOp: OperationMeta = $state({
     code: "",
     site: "",
     op_type: "",
     responsable: "",
-  };
+  });
 
-  $: newValueError =
-    activeCategory === "sites" ? getSafeSegmentError(newValue) : "";
-  $: newOpCodeError = getSafeSegmentError(newOp.code);
-  $: newOpSiteError = getSafeSegmentError(newOp.site);
+  let newValueError = $derived(
+    activeCategory === "sites" ? getSafeSegmentError(newValue) : ""
+  );
+  let newOpCodeError = $derived(getSafeSegmentError(newOp.code));
+  let newOpSiteError = $derived(getSafeSegmentError(newOp.site));
 
   // --- Chargement ---
   async function loadPresets() {

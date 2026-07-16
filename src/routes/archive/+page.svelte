@@ -114,76 +114,76 @@
     | "software";
 
   // --- Sub-tabs ---
-  let activeTab: ArchiveTab = "consultation";
+  let activeTab: ArchiveTab = $state("consultation");
 
   // --- Consultation state ---
-  let items: SummaryItem[] = [];
-  let total = 0;
-  let page = 1;
-  let perPage = 50;
-  let query = "";
-  let loading = false;
-  let consultationError: string | null = null;
+  let items: SummaryItem[] = $state([]);
+  let total = $state(0);
+  let page = $state(1);
+  let perPage = $state(50);
+  let query = $state("");
+  let loading = $state(false);
+  let consultationError: string | null = $state(null);
 
   // --- Filters ---
-  let filterAsset: ConsultationAssetFilter = "all";
-  let filterOperationCode = "";
-  let filterStructureType = "";
-  let filterDateOrder: "" | "recent" | "old" = "";
-  let operationFilterOptions: string[] = [];
-  let structureTypeFilterOptions: string[] = [];
+  let filterAsset: ConsultationAssetFilter = $state("all");
+  let filterOperationCode = $state("");
+  let filterStructureType = $state("");
+  let filterDateOrder: "" | "recent" | "old" = $state("");
+  let operationFilterOptions: string[] = $state([]);
+  let structureTypeFilterOptions: string[] = $state([]);
 
   // --- Sort ---
-  let sortField = "operation_code";
-  let sortDirection: "asc" | "desc" = "asc";
+  let sortField = $state("operation_code");
+  let sortDirection: "asc" | "desc" = $state("asc");
 
   // --- Detail ---
-  let selectedItem: SummaryItem | null = null;
-  let selectedDetails: StructureDetailsResponse | null = null;
-  let detailLoading = false;
-  let detailError: string | null = null;
-  let detailActionStatus: string | null = null;
-  let detailRequestToken = 0;
-  let orthoPreviewSrc: string | null = null;
-  let orthoPreviewPath: string | null = null;
-  let orthoPreviewLoading = false;
-  let orthoPreviewError: string | null = null;
-  let showOrthoPreviewModal = false;
+  let selectedItem: SummaryItem | null = $state(null);
+  let selectedDetails: StructureDetailsResponse | null = $state(null);
+  let detailLoading = $state(false);
+  let detailError: string | null = $state(null);
+  let detailActionStatus: string | null = $state(null);
+  let detailRequestToken = $state(0);
+  let orthoPreviewSrc: string | null = $state(null);
+  let orthoPreviewPath: string | null = $state(null);
+  let orthoPreviewLoading = $state(false);
+  let orthoPreviewError: string | null = $state(null);
+  let showOrthoPreviewModal = $state(false);
 
   // --- Stats ---
-  let stats: ArchiveStatistics | null = null;
-  let loadingStats = false;
-  let statsError: string | null = null;
+  let stats: ArchiveStatistics | null = $state(null);
+  let loadingStats = $state(false);
+  let statsError: string | null = $state(null);
 
   // --- Activity ---
-  let recentActivity: AuditEntry[] = [];
-  let loadingActivity = false;
-  let activityError: string | null = null;
+  let recentActivity: AuditEntry[] = $state([]);
+  let loadingActivity = $state(false);
+  let activityError: string | null = $state(null);
 
   // --- Inventory ---
-  let inventory: InventoryItem[] = [];
-  let loadingInventory = false;
-  let inventoryError: string | null = null;
-  let inventoryQuery = "";
-  let inventorySortField: InventorySortField = "deposit_date";
-  let inventorySortDirection: "asc" | "desc" = "desc";
-  let inventoryFilterOperationCode = "";
-  let inventoryFilterOperationSite = "";
-  let inventoryFilterOperationType = "";
-  let inventoryFilterResponsable = "";
-  let inventoryFilterStructureType = "";
-  let inventoryFilterModelAuthor = "";
-  let inventoryFilterDepositor = "";
-  let inventoryFilterSoftware = "";
-  let activeInventoryFilterMenu: string | null = null;
-  let inventoryFilterMenuPos: { top: number; left: number } = { top: 0, left: 0 };
-  let inventoryPage = 1;
-  let inventoryPerPage = 50;
-  let inventoryExportStatus = "";
-  let inventoryExportStatusType: "success" | "error" | "" = "";
-  let inventoryTableContainerEl: HTMLDivElement | null = null;
-  let canScrollInventoryLeft = false;
-  let canScrollInventoryRight = false;
+  let inventory: InventoryItem[] = $state([]);
+  let loadingInventory = $state(false);
+  let inventoryError: string | null = $state(null);
+  let inventoryQuery = $state("");
+  let inventorySortField: InventorySortField = $state("deposit_date");
+  let inventorySortDirection: "asc" | "desc" = $state("desc");
+  let inventoryFilterOperationCode = $state("");
+  let inventoryFilterOperationSite = $state("");
+  let inventoryFilterOperationType = $state("");
+  let inventoryFilterResponsable = $state("");
+  let inventoryFilterStructureType = $state("");
+  let inventoryFilterModelAuthor = $state("");
+  let inventoryFilterDepositor = $state("");
+  let inventoryFilterSoftware = $state("");
+  let activeInventoryFilterMenu: string | null = $state(null);
+  let inventoryFilterMenuPos: { top: number; left: number } = $state({ top: 0, left: 0 });
+  let inventoryPage = $state(1);
+  let inventoryPerPage = $state(50);
+  let inventoryExportStatus = $state("");
+  let inventoryExportStatusType: "success" | "error" | "" = $state("");
+  let inventoryTableContainerEl: HTMLDivElement | null = $state(null);
+  let canScrollInventoryLeft = $state(false);
+  let canScrollInventoryRight = $state(false);
 
   let consultationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let inventoryScrollRaf: number | null = null;
@@ -191,13 +191,13 @@
 
   // --- Stats interaction ---
   const statsTopLimit = 8;
-  let showAllOperations = false;
-  let showAllStructureTypes = false;
-  let showAllAuthors = false;
-  let showAllYears = false;
+  let showAllOperations = $state(false);
+  let showAllStructureTypes = $state(false);
+  let showAllAuthors = $state(false);
+  let showAllYears = $state(false);
 
   // --- Derived ---
-  $: totalPages = Math.ceil(total / perPage) || 1;
+  let totalPages = $derived(Math.ceil(total / perPage) || 1);
 
   // --- Mount ---
   onMount(() => {
@@ -908,16 +908,16 @@
     }
   }
 
-  $: metadataSource = selectedDetails?.metadata_raw ?? selectedDetails?.metadata ?? null;
-  $: metadataRoot = asRecord(metadataSource);
-  $: operationMetadata = asRecord(metadataRoot?.operation);
-  $: structureMetadata = asRecord(metadataRoot?.structure);
-  $: operationRows = [
+  let metadataSource = $derived(selectedDetails?.metadata_raw ?? selectedDetails?.metadata ?? null);
+  let metadataRoot = $derived(asRecord(metadataSource));
+  let operationMetadata = $derived(asRecord(metadataRoot?.operation));
+  let structureMetadata = $derived(asRecord(metadataRoot?.structure));
+  let operationRows = $derived([
     { label: "Code", value: valueToText(operationMetadata?.code) },
     { label: "Site", value: valueToText(operationMetadata?.site) },
     { label: "Responsable", value: valueToText(operationMetadata?.responsable) },
-  ];
-  $: structureRows = [
+  ]);
+  let structureRows = $derived([
     { label: "Type d'opération", value: valueToText(operationMetadata?.op_type) },
     { label: "Identifiant structure", value: valueToText(structureMetadata?.id) },
     { label: "Type de structure", value: valueToText(structureMetadata?.st_type) },
@@ -926,40 +926,41 @@
     { label: "Nombre de photos", value: valueToText(structureMetadata?.photos_count) },
     { label: "Nombre de polygones", value: valueToText(structureMetadata?.faces_count) },
     { label: "Logiciels", value: valueToText(structureMetadata?.software) },
-  ];
-  $: structureDescription = valueToText(structureMetadata?.description);
-  $: detailModelCount = selectedDetails?.models?.length ?? (selectedItem?.has_model ? 1 : 0);
-  $: detailOrthoCount =
-    selectedDetails?.orthos?.length ?? (selectedItem?.has_orthos ? 1 : 0);
-  $: detailPrimaryModelPath = preferredModelPath(selectedDetails?.models);
-  $: detailNoVisualAssets = detailModelCount === 0 && detailOrthoCount === 0;
-  $: operationEntries = stats ? sortedEntries(stats.by_operation) : [];
-  $: structureEntries = stats ? sortedEntries(stats.by_structure_type) : [];
-  $: authorEntries = stats ? sortedEntries(stats.by_author) : [];
-  $: yearEntries = stats ? sortedEntries(stats.by_year) : [];
-  $: visibleOperationEntries = showAllOperations
+  ]);
+  let structureDescription = $derived(valueToText(structureMetadata?.description));
+  let detailModelCount = $derived(selectedDetails?.models?.length ?? (selectedItem?.has_model ? 1 : 0));
+  let detailOrthoCount = $derived(
+    selectedDetails?.orthos?.length ?? (selectedItem?.has_orthos ? 1 : 0),
+  );
+  let detailPrimaryModelPath = $derived(preferredModelPath(selectedDetails?.models));
+  let detailNoVisualAssets = $derived(detailModelCount === 0 && detailOrthoCount === 0);
+  let operationEntries = $derived(stats ? sortedEntries(stats.by_operation) : []);
+  let structureEntries = $derived(stats ? sortedEntries(stats.by_structure_type) : []);
+  let authorEntries = $derived(stats ? sortedEntries(stats.by_author) : []);
+  let yearEntries = $derived(stats ? sortedEntries(stats.by_year) : []);
+  let visibleOperationEntries = $derived(showAllOperations
     ? operationEntries
-    : operationEntries.slice(0, statsTopLimit);
-  $: visibleStructureEntries = showAllStructureTypes
+    : operationEntries.slice(0, statsTopLimit));
+  let visibleStructureEntries = $derived(showAllStructureTypes
     ? structureEntries
-    : structureEntries.slice(0, statsTopLimit);
-  $: visibleAuthorEntries = showAllAuthors
+    : structureEntries.slice(0, statsTopLimit));
+  let visibleAuthorEntries = $derived(showAllAuthors
     ? authorEntries
-    : authorEntries.slice(0, statsTopLimit);
-  $: visibleYearEntries = showAllYears
+    : authorEntries.slice(0, statsTopLimit));
+  let visibleYearEntries = $derived(showAllYears
     ? yearEntries
-    : yearEntries.slice(0, statsTopLimit);
+    : yearEntries.slice(0, statsTopLimit));
 
-  $: inventoryQueryNormalized = normalizeText(inventoryQuery);
-  $: inventoryFilterOperationCodeNorm = normalizeText(inventoryFilterOperationCode);
-  $: inventoryFilterOperationSiteNorm = normalizeText(inventoryFilterOperationSite);
-  $: inventoryFilterOperationTypeNorm = normalizeText(inventoryFilterOperationType);
-  $: inventoryFilterResponsableNorm = normalizeText(inventoryFilterResponsable);
-  $: inventoryFilterStructureTypeNorm = normalizeText(inventoryFilterStructureType);
-  $: inventoryFilterModelAuthorNorm = normalizeText(inventoryFilterModelAuthor);
-  $: inventoryFilterDepositorNorm = normalizeText(inventoryFilterDepositor);
-  $: inventoryFilterSoftwareNorm = normalizeText(inventoryFilterSoftware);
-  $: inventoryHasActiveFilters =
+  let inventoryQueryNormalized = $derived(normalizeText(inventoryQuery));
+  let inventoryFilterOperationCodeNorm = $derived(normalizeText(inventoryFilterOperationCode));
+  let inventoryFilterOperationSiteNorm = $derived(normalizeText(inventoryFilterOperationSite));
+  let inventoryFilterOperationTypeNorm = $derived(normalizeText(inventoryFilterOperationType));
+  let inventoryFilterResponsableNorm = $derived(normalizeText(inventoryFilterResponsable));
+  let inventoryFilterStructureTypeNorm = $derived(normalizeText(inventoryFilterStructureType));
+  let inventoryFilterModelAuthorNorm = $derived(normalizeText(inventoryFilterModelAuthor));
+  let inventoryFilterDepositorNorm = $derived(normalizeText(inventoryFilterDepositor));
+  let inventoryFilterSoftwareNorm = $derived(normalizeText(inventoryFilterSoftware));
+  let inventoryHasActiveFilters = $derived(
     !!inventoryQuery.trim() ||
     !!inventoryFilterOperationCode ||
     !!inventoryFilterOperationSite ||
@@ -968,16 +969,17 @@
     !!inventoryFilterStructureType ||
     !!inventoryFilterModelAuthor ||
     !!inventoryFilterDepositor ||
-    !!inventoryFilterSoftware;
-  $: inventoryOperationCodeOptions = uniqueSortedValues(inventory.map((item) => item.operation_code));
-  $: inventoryOperationSiteOptions = uniqueSortedValues(inventory.map((item) => item.operation_site));
-  $: inventoryOperationTypeOptions = uniqueSortedValues(inventory.map((item) => item.operation_type));
-  $: inventoryResponsableOptions = uniqueSortedValues(inventory.map((item) => item.operation_responsable));
-  $: inventoryStructureTypeOptions = uniqueSortedValues(inventory.map((item) => item.structure_type));
-  $: inventoryAuthorOptions = uniqueSortedValues(inventory.map((item) => item.model_author));
-  $: inventoryDepositorOptions = uniqueSortedValues(inventory.map((item) => item.depositor));
-  $: inventorySoftwareOptions = uniqueSortedValues(inventory.map((item) => item.software));
-  $: filteredInventory = inventory.filter((item) => {
+    !!inventoryFilterSoftware,
+  );
+  let inventoryOperationCodeOptions = $derived(uniqueSortedValues(inventory.map((item) => item.operation_code)));
+  let inventoryOperationSiteOptions = $derived(uniqueSortedValues(inventory.map((item) => item.operation_site)));
+  let inventoryOperationTypeOptions = $derived(uniqueSortedValues(inventory.map((item) => item.operation_type)));
+  let inventoryResponsableOptions = $derived(uniqueSortedValues(inventory.map((item) => item.operation_responsable)));
+  let inventoryStructureTypeOptions = $derived(uniqueSortedValues(inventory.map((item) => item.structure_type)));
+  let inventoryAuthorOptions = $derived(uniqueSortedValues(inventory.map((item) => item.model_author)));
+  let inventoryDepositorOptions = $derived(uniqueSortedValues(inventory.map((item) => item.depositor)));
+  let inventorySoftwareOptions = $derived(uniqueSortedValues(inventory.map((item) => item.software)));
+  let filteredInventory = $derived(inventory.filter((item) => {
     const haystack = `${item.structure_id} ${item.operation_code} ${item.operation_site} ${item.operation_type} ${item.operation_responsable} ${item.structure_type} ${item.photos_count} ${item.photos_total_size_mb} ${item.model_size_mb} ${item.faces_count} ${item.model_author} ${item.depositor} ${item.software} ${item.deposit_date}`
       .toLowerCase()
       .trim();
@@ -1023,24 +1025,27 @@
     )
       return false;
     return true;
-  });
-  $: displayedInventory = [...filteredInventory].sort((a, b) =>
+  }));
+  let displayedInventory = $derived([...filteredInventory].sort((a, b) =>
     compareInventoryItems(a, b, inventorySortField, inventorySortDirection),
-  );
-  $: inventoryTotalPages = Math.max(
+  ));
+  let inventoryTotalPages = $derived(Math.max(
     1,
     Math.ceil(displayedInventory.length / inventoryPerPage),
+  ));
+  $effect(() => {
+    if (inventoryPage > inventoryTotalPages) {
+      inventoryPage = inventoryTotalPages;
+    }
+  });
+  let inventoryPageStart = $derived(
+    displayedInventory.length === 0 ? 0 : (inventoryPage - 1) * inventoryPerPage + 1,
   );
-  $: if (inventoryPage > inventoryTotalPages) {
-    inventoryPage = inventoryTotalPages;
-  }
-  $: inventoryPageStart =
-    displayedInventory.length === 0 ? 0 : (inventoryPage - 1) * inventoryPerPage + 1;
-  $: inventoryPageEnd = Math.min(inventoryPage * inventoryPerPage, displayedInventory.length);
-  $: paginatedInventory = displayedInventory.slice(
+  let inventoryPageEnd = $derived(Math.min(inventoryPage * inventoryPerPage, displayedInventory.length));
+  let paginatedInventory = $derived(displayedInventory.slice(
     (inventoryPage - 1) * inventoryPerPage,
     inventoryPage * inventoryPerPage,
-  );
+  ));
 </script>
 
 <svelte:window on:click={() => { activeInventoryFilterMenu = null; }} />

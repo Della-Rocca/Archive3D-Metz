@@ -1,57 +1,46 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
-    export let value = "";
-    export let options: string[] = [];
-    export let placeholder = "";
-    export let disabled = false;
+  let {
+    value = $bindable(""),
+    options = [],
+    placeholder = "",
+    disabled = false,
+  }: {
+    value?: string;
+    options?: string[];
+    placeholder?: string;
+    disabled?: boolean;
+  } = $props();
 
-    const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher();
 
-    let open = false;
-    let inputEl: HTMLInputElement;
-    let containerEl: HTMLDivElement;
+  let open = $state(false);
+  let inputEl: HTMLInputElement;
+  let containerEl: HTMLDivElement;
 
-    $: filtered = options;
+  let filtered = $derived(options);
 
-    function select(opt: string) {
-        value = opt;
-        dispatch("change", value);
-    }
+  function select(opt: string) {
+    value = opt;
+    dispatch("change", value);
+  }
 
-    function handleInput() {
-        open = true;
-        dispatch("input", value);
-    }
+  function handleInput() {
+    open = true;
+    dispatch("input", value);
+  }
 
-    function handleClick() {
-        if (disabled) return;
-        open = !open;
-    }
+  function handleClick() {
+    if (disabled) return;
+    open = !open;
+  }
 
-    function handleBlur(e: FocusEvent) {
-        const related = e.relatedTarget as HTMLElement | null;
-        if (related && containerEl?.contains(related)) return;
-        open = false;
-        dispatch("change", value);
-    }
-
-    function handleKeydown(e: KeyboardEvent) {
-        if (e.key === "Escape") {
-            open = false;
-            inputEl?.blur();
-        }
-    }
-
-    function handleChevronClick() {
-        if (disabled) return;
-        if (open) {
-            open = false;
-        } else {
-            open = true;
-            inputEl?.focus();
-        }
-    }
+  function handleBlur(e: FocusEvent) {
+    const related = e.relatedTarget as HTMLElement | null;
+    if (related && containerEl?.contains(related)) return;
+    open = false;
+  }
 </script>
 
 <div class="combo" class:disabled bind:this={containerEl}>
@@ -64,13 +53,12 @@
         on:input={handleInput}
         on:click={handleClick}
         on:blur={handleBlur}
-        on:keydown={handleKeydown}
         autocomplete="off"
     />
     <button
         type="button"
         class="combo-toggle"
-        on:mousedown|preventDefault={handleChevronClick}
+        on:click={handleClick}
         {disabled}
         tabindex="-1"
         aria-label="Ouvrir la liste"

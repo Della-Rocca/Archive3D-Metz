@@ -1,14 +1,13 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { onMount } from "svelte";
-  import { authStore, can } from "$lib/stores/auth";
+  import { onMount, onDestroy } from "svelte";
+  import { auth, can } from "$lib/stores/auth.svelte";
 
-  // Routes publiques qui ne nécessitent pas d'authentification
   const publicRoutes = ['/login'];
-  let topnavEl: HTMLElement | null = null;
-  let topnavResizeObserver: ResizeObserver | null = null;
-  let observedTopnavEl: HTMLElement | null = null;
+  let topnavEl: HTMLElement | null = $state(null);
+  let topnavResizeObserver: ResizeObserver | null = $state(null);
+  let observedTopnavEl: HTMLElement | null = $state(null);
 
   function syncTopnavHeight() {
     if (typeof document === "undefined") return;
@@ -17,17 +16,15 @@
     document.documentElement.style.setProperty("--app-topnav-height", `${topnavHeight}px`);
   }
 
+  // Auth guard — re-runs whenever auth.isAuthenticated changes
+  $effect(() => {
+    if (!auth.isAuthenticated && !publicRoutes.includes(window.location.pathname)) {
+      goto('/login');
+    }
+  });
+
+  // ResizeObserver setup — runs once on mount
   onMount(() => {
-    // Vérifier si l'utilisateur est authentifié
-    const unsubscribe = authStore.subscribe(state => {
-      const currentPath = window.location.pathname;
-
-      // Si pas authentifié et pas sur une route publique, rediriger vers login
-      if (!state.isAuthenticated && !publicRoutes.includes(currentPath)) {
-        goto('/login');
-      }
-    });
-
     syncTopnavHeight();
     if (typeof ResizeObserver !== "undefined") {
       topnavResizeObserver = new ResizeObserver(() => syncTopnavHeight());
@@ -38,9 +35,7 @@
     } else {
       window.addEventListener("resize", syncTopnavHeight);
     }
-
     return () => {
-      unsubscribe();
       topnavResizeObserver?.disconnect();
       topnavResizeObserver = null;
       observedTopnavEl = null;
@@ -49,28 +44,27 @@
     };
   });
 
-  $: hideTopnav = $page.url.pathname === '/login' || $page.url.pathname === '/setup';
-  $: if (topnavResizeObserver && topnavEl !== observedTopnavEl) {
-    if (observedTopnavEl) {
-      topnavResizeObserver.unobserve(observedTopnavEl);
+  // Re-observe when topnavEl binding updates after first render
+  $effect(() => {
+    if (topnavResizeObserver && topnavEl !== observedTopnavEl) {
+      if (observedTopnavEl) topnavResizeObserver.unobserve(observedTopnavEl);
+      if (topnavEl) topnavResizeObserver.observe(topnavEl);
+      observedTopnavEl = topnavEl;
     }
-    if (topnavEl) {
-      topnavResizeObserver.observe(topnavEl);
-    }
-    observedTopnavEl = topnavEl;
-  }
-  $: syncTopnavHeight();
+  });
 
-  // Stores dérivés pour les permissions (réactifs)
-  const canValidateStore = can('canValidate');
-  const canAccessConfigStore = can('canAccessConfig');
+  // Sync height whenever hideTopnav or topnavEl changes
+  $effect(() => {
+    syncTopnavHeight();
+  });
 
-  $: canValidate = $canValidateStore;
-  $: canAccessConfig = $canAccessConfigStore;
-  $: currentRole = $authStore.role;
+  let hideTopnav = $derived($page.url.pathname === '/login' || $page.url.pathname === '/setup');
+  let canValidate = $derived(can('canValidate'));
+  let canAccessConfig = $derived(can('canAccessConfig'));
+  let currentRole = $derived(auth.role);
 
   function handleLogout() {
-    authStore.logout();
+    auth.logout();
   }
 </script>
 

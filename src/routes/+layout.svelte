@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { auth, can } from "$lib/stores/auth.svelte";
 
   const publicRoutes = ['/login'];

@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { auth, can } from "$lib/stores/auth.svelte";
+  import UpdateModal from "$lib/components/UpdateModal.svelte";
 
   const publicRoutes = ['/login'];
   let topnavEl: HTMLElement | null = $state(null);
@@ -112,6 +113,8 @@
     </div>
   </nav>
 {/if}
+
+<UpdateModal />
 
 <slot />
 

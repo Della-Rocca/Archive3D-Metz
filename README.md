@@ -46,30 +46,6 @@ npm run tauri dev
 ```
 ---
 
-## Publier une release
-
-Les releases sont construites et publiées automatiquement par GitHub Actions (macOS universel, Windows NSIS, Linux AppImage) avec les artefacts de mise à jour automatique (`latest.json` + signatures).
-
-1. **Bumper la version** dans `src-tauri/tauri.conf.json` **et** `package.json` (ex. `0.2.0`). C'est la version de `tauri.conf.json` que l'updater compare — un tag `v0.2.0` avec une config restée en `0.1.0` ne déclenchera aucune mise à jour chez les utilisateurs.
-2. **Commiter, tagger et pousser** :
-   ```bash
-   git commit -am "release: v0.2.0"
-   git tag v0.2.0
-   git push origin main --tags
-   ```
-3. Le workflow crée la release GitHub avec les installateurs, les fichiers `.sig` et le `latest.json`. Les applications installées détectent la nouvelle version au prochain démarrage.
-
-> **Notes de version dans le pop-up** : le texte affiché aux utilisateurs vient du champ `releaseBody` du workflow au moment de la publication. Éditer la release sur GitHub après coup ne met pas à jour `latest.json`.
-
-### Secrets requis (déjà configurés)
-
-- `TAURI_SIGNING_PRIVATE_KEY` — clé privée de signature de l'updater
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — son mot de passe
-
-> ⚠️ Si la clé privée ou son mot de passe sont perdus, les applications déjà installées ne pourront plus vérifier les mises à jour (leur clé publique embarquée ne correspondra plus). Conserver une sauvegarde de `~/.tauri/archive-metz.key`.
-
----
-
 ## Stack technique
 
 - **Frontend** — SvelteKit 2 + Svelte 5 + TypeScript
